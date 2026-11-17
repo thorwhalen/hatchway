@@ -112,7 +112,7 @@ def run_decision(
         proc = subprocess.Popen(
             list(decision.argv),
             env=command_env(settings),
-            stdin=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL if decision.stdin is None else subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -122,7 +122,7 @@ def run_decision(
         sys.stderr.write(f"hatchway: {decision.argv[0]!r} is not installed on this machine\n")
         return 127
     try:
-        stdout, stderr = proc.communicate(timeout=settings.timeout)
+        stdout, stderr = proc.communicate(input=decision.stdin, timeout=settings.timeout)
     except subprocess.TimeoutExpired:
         os.killpg(proc.pid, signal.SIGKILL)
         proc.communicate()
@@ -177,6 +177,10 @@ def gate(
             settings=settings,
         )
         return REFUSED
+    if decision.stdin is not None:  # a body of text is the agent's content, not a request
+        record["request"] = (
+            " ".join(decision.rule.match) + f" [stdin: {len(decision.stdin)} chars]"
+        )
     allowed = {
         **record,
         "decision": "allowed",

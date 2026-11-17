@@ -10,6 +10,7 @@
     hatchway install-skills             # link the bundled skills into Claude homes
     hatchway setup KEY --agent muse     # all of the above, in order, on a new machine
     hatchway log                        # the last calls an agent made
+    hatchway mcp --profile claude-ai    # the profile as MCP tools (needs hatchway[mcp])
 
 The CLI is plain ``argparse`` on purpose: a gate should import as little as possible.
 """
@@ -84,9 +85,50 @@ def main(argv: list[str] | None = None) -> int:
     lg = sub.add_parser("log", help="the last calls made through the gate")
     lg.add_argument("-n", type=int, default=20)
 
+    m = sub.add_parser("mcp", help="serve the profile as MCP tools (needs hatchway[mcp])")
+    m.add_argument("--profile")
+    m.add_argument("--ssh", help="send each call to this [user@]host's gate instead")
+    m.add_argument("--identity", help="the ssh key for --ssh")
+    m.add_argument("--classes", default="read", help="comma separated (default: read)")
+    m.add_argument("--http", type=int, help="serve streamable HTTP on 127.0.0.1:PORT")
+    m.add_argument(
+        "--no-auth",
+        action="store_true",
+        help="required with --http: this serves WITHOUT authentication, to this machine",
+    )
+    m.add_argument("--list", action="store_true", help="print the tools and exit")
+
     args = ap.parse_args(argv)
     settings = load_settings()
 
+    if args.cmd == "mcp":
+        from hatchway.mcp import local_runner, mk_server, mk_tools, ssh_runner
+
+        classes = [c.strip() for c in args.classes.split(",") if c.strip()]
+        runner = (
+            ssh_runner(args.ssh, identity=args.identity)
+            if args.ssh
+            else local_runner(profile=args.profile or settings.profile)
+        )
+        name = args.profile or settings.profile
+        if args.ssh and not args.profile:
+            ap.error("--ssh needs --profile: the far gate decides with the profile it is told")
+        profile = load_profile(name, settings=settings)
+        if args.http and not args.no_auth:
+            ap.error(
+                "--http serves with no authentication (any process here can call it); "
+                "pass --no-auth to accept that, or serve hatchway.mcp.mk_server(auth=...)"
+            )
+        if args.list:
+            for t in mk_tools(profile, runner=runner, classes=classes):
+                print(f"{t.__name__}{t.__signature__}  {t.__doc__}")
+            return 0
+        server = mk_server(profile, runner=runner, settings=settings, classes=classes)
+        if args.http:
+            server.run(transport="streamable-http", host="127.0.0.1", port=args.http)
+        else:
+            server.run()
+        return 0
     if args.cmd == "gate":
         from hatchway.gate import gate
 

@@ -110,8 +110,45 @@ def profile_path(name_or_path: str, *, settings: Settings | None = None) -> Path
     raise FileNotFoundError(f"no profile {name_or_path!r}; bundled: {', '.join(known)}")
 
 
+def _profile_dict(name_or_path: str, *, settings, seen: tuple = ()) -> dict:
+    """A profile's TOML as a dict, with ``extends`` resolved.
+
+    ``extends = "claude-ai"`` takes that profile's rules, classes, snapshot and
+    instructions first; this file's rules come after them and replace a rule with the
+    same ``match``. So a machine's private profile adds what only it has without copying
+    the bundled one. A class table is merged key by key, and a ``requires_flag`` of the
+    base is kept, so extending never removes a gate.
+    """
+    path = profile_path(name_or_path, settings=settings)
+    if path in seen:
+        raise ValueError(f"profile {path.stem!r} extends itself")
+    d = tomllib.loads(path.read_text())
+    d.setdefault("name", path.stem)
+    base_name = d.pop("extends", None)
+    if not base_name:
+        return d
+    if base_name == path.stem and (BUNDLED_PROFILES / f"{base_name}.toml") != path:
+        base_name = str(
+            BUNDLED_PROFILES / f"{base_name}.toml"
+        )  # a local copy extends the bundled one
+    base = _profile_dict(base_name, settings=settings, seen=(*seen, path))
+    own = {tuple(r["match"]) for r in d.get("rule", ())}
+    rules = [r for r in base.get("rule", ()) if tuple(r["match"]) not in own]
+    return {
+        **base,
+        **d,
+        "rule": rules + list(d.get("rule", ())),
+        # per class, merged: a profile that extends another can add a gate, never drop one
+        "classes": {
+            k: {**base.get("classes", {}).get(k, {}), **v}
+            for k, v in {**base.get("classes", {}), **d.get("classes", {})}.items()
+        },
+        "snapshot": list(base.get("snapshot", ())) + list(d.get("snapshot", ())),
+    }
+
+
 def load_profile(
     name_or_path: str = DFLT_PROFILE, *, settings: Settings | None = None
 ) -> Profile:
     path = profile_path(name_or_path, settings=settings)
-    return Profile.from_dict(tomllib.loads(path.read_text()), name=path.stem)
+    return Profile.from_dict(_profile_dict(name_or_path, settings=settings), name=path.stem)

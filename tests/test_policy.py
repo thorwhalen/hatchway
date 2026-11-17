@@ -3,6 +3,7 @@
 import pytest
 
 from hatchway import decide, load_profile
+from hatchway.policy import Profile
 
 P = load_profile("claude-fleet")
 
@@ -143,3 +144,47 @@ def test_dispatch_is_gated(tmp_path):
         flags_present=flags,
         dispatch_roots=[str(tmp_path)],
     )
+
+
+# --- stdin: a body of text goes to the command's standard input, never its argv ---------
+
+_STDIN = Profile.from_dict(
+    {
+        "rule": [
+            {
+                "match": ["note"],
+                "argv": ["annals", "publish", "-"],
+                "value_flags": [
+                    {"names": ["--title"], "free": True},
+                    {"names": ["--text"], "free": True},
+                ],
+                "stdin": "--text",
+            }
+        ]
+    }
+)
+
+
+def test_stdin_use():
+    d = decide("note --title T --text '- a list; $HOME `x`'", _STDIN)
+    assert d.allowed and d.stdin == "- a list; $HOME `x`"
+    assert d.argv == ("annals", "publish", "-", "--title", "T")
+
+
+def test_stdin_abuse():
+    assert not decide("note --title T", _STDIN).allowed  # the body is required
+    assert not decide("note --text 'a\x00b'", _STDIN).allowed  # NUL byte
+    assert not decide("note --title -x --text t", _STDIN).allowed  # a non-stdin free value
+    with pytest.raises(ValueError, match="free value flag"):
+        Profile.from_dict(
+            {
+                "rule": [
+                    {
+                        "match": ["n"],
+                        "argv": ["x"],
+                        "stdin": "--text",
+                        "value_flags": [{"names": ["--text"]}],
+                    }
+                ]
+            }
+        )
