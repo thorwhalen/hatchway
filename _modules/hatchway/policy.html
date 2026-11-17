@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.1" />
+  <meta name="docsearch:version" content="0.0.2" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -852,9 +852,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../_autosummary/hatchway.policy.html#hatchway.Profile.rule_for">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rule_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Rule</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""The rule with the longest ``match`` that prefixes ``tokens``."""</span>
-        <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tokens</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">)])</span> <span class="o">==</span> <span class="n">r</span><span class="o">.</span><span class="n">match</span>
-        <span class="p">]</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">tokens</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">)])</span> <span class="o">==</span> <span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">]</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 </div>
 
@@ -926,7 +924,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">request</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"class </span><span class="si">{</span><span class="n">rule</span><span class="o">.</span><span class="n">klass</span><span class="si">!r}</span><span class="s2"> is switched off (flag </span><span class="si">{</span><span class="n">needed</span><span class="si">!r}</span><span class="s2"> absent)"</span><span class="p">,</span> <span class="n">rule</span>
         <span class="p">)</span>
     <span class="n">extras</span><span class="p">,</span> <span class="n">positional</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-    <span class="n">rest</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">match</span><span class="p">):])</span>
+    <span class="n">rest</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">match</span><span class="p">)</span> <span class="p">:])</span>
     <span class="k">while</span> <span class="n">rest</span><span class="p">:</span>
         <span class="n">tok</span> <span class="o">=</span> <span class="n">rest</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tok</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"-"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">tok</span> <span class="o">!=</span> <span class="s2">"-"</span><span class="p">:</span>
@@ -1013,9 +1011,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">profile</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
         <span class="n">words</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">match</span><span class="p">)</span>
-        <span class="n">flags</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">flags</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'|'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> VALUE"</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">value_flags</span>
-        <span class="p">]</span>
+        <span class="n">flags</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">flags</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'|'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> VALUE"</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">value_flags</span><span class="p">]</span>
         <span class="n">args</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">max_positional</span><span class="p">:</span>
             <span class="n">args</span> <span class="o">=</span> <span class="s2">" NAME"</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">max_positional</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">" NAME...(≤</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">max_positional</span><span class="si">}</span><span class="s2">)"</span>
