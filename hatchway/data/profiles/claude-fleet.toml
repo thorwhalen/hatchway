@@ -1,0 +1,189 @@
+# claude-fleet: what an outside agent may ask of a machine running Claude Code sessions,
+# watched by crowsnest (live sessions) and openloops (what they left owed or blocked).
+#
+# Requests are the words the agent sends; `argv` is what actually runs, with the checked
+# extras appended and any names placed after `--`. Anything not described is refused.
+# Copy this file to ~/.config/hatchway/profiles/<name>.toml to change it for one machine.
+
+name = "claude-fleet"
+
+[classes.read]
+# reading: always on once the key is authorised
+
+[classes.dispatch]
+# starting a session runs an agent with your permissions: off until you create
+# ~/.config/hatchway/allow-dispatch AND list [dispatch] roots in config.toml
+requires_flag = "allow-dispatch"
+
+# --- crowsnest: live sessions ---------------------------------------------------------
+
+[[rule]]
+match = ["crowsnest"]
+argv = ["crowsnest", "roster", "--all-homes"]
+flags = ["-b", "--brief", "-j", "--json"]
+help = "the roster: waiting on the owner first, then busy, then idle"
+
+[[rule]]
+match = ["crowsnest", "roster"]
+argv = ["crowsnest", "roster", "--all-homes"]
+flags = ["-b", "--brief", "-j", "--json"]
+help = "same as bare crowsnest"
+
+[[rule]]
+match = ["crowsnest", "triage"]
+argv = ["crowsnest", "triage", "--all-homes"]
+flags = ["-q", "--quiet", "-j", "--json", "-p", "--plain"]
+help = "what needs the owner, what is safe to close, what is working"
+
+[[rule]]
+match = ["crowsnest", "show"]
+argv = ["crowsnest", "show", "--all-homes"]
+flags = ["-j", "--json"]
+value_flags = [{ names = ["-r", "--recent"], pattern = "[0-9]{1,2}" }]
+min_positional = 1
+max_positional = 1
+help = "one session in full (quotes its transcript)"
+
+[[rule]]
+match = ["crowsnest", "turns"]
+argv = ["crowsnest", "turns", "--all-homes"]
+flags = ["-j", "--json"]
+value_flags = [
+  { names = ["-l", "--last"], pattern = "[0-9]{1,2}" },
+  { names = ["-b", "--before"], pattern = "[0-9]{1,5}" },
+]
+min_positional = 1
+max_positional = 1
+help = "the last few turns of one session"
+
+[[rule]]
+match = ["crowsnest", "recap"]
+argv = ["crowsnest", "recap", "--all-homes"]
+flags = ["-j", "--json"]
+min_positional = 1
+max_positional = 1
+help = "five lines about one session, from disk"
+
+[[rule]]
+match = ["crowsnest", "brief"]
+argv = ["crowsnest", "brief", "--all-homes"]
+flags = ["-j", "--json"]
+min_positional = 1
+max_positional = 1
+help = "openloops' dated digest of one session"
+
+[[rule]]
+match = ["crowsnest", "ledger"]
+argv = ["crowsnest", "ledger"]
+flags = ["-j", "--json"]
+max_positional = 8
+help = "every ledger with its age, or the named ones in full"
+
+[[rule]]
+match = ["crowsnest", "groups"]
+argv = ["crowsnest", "groups", "--all-homes"]
+flags = ["-j", "--json"]
+value_flags = [{ names = ["-b", "--by"], pattern = "[a-z]{1,20}" }]
+help = "live sessions grouped by theme or project"
+
+[[rule]]
+match = ["crowsnest", "synopsis"]
+argv = ["crowsnest", "synopsis", "--all-homes"]
+flags = ["-j", "--json"]
+value_flags = [{ names = ["-b", "--by"], pattern = "[a-z]{1,20}" }]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[A-Za-z0-9][A-Za-z0-9._@:+ -]{0,79}"
+help = "a few lines on one group"
+
+[[rule]]
+match = ["crowsnest", "questions"]
+argv = ["crowsnest", "questions", "--all-homes"]
+flags = ["-u", "--unanswered", "-j", "--json"]
+help = "what the owner asked sessions in the last two weeks, and the answers"
+
+[[rule]]
+match = ["crowsnest", "lineage"]
+argv = ["crowsnest", "lineage", "--all-homes"]
+flags = ["-j", "--json"]
+help = "who started whom (read only: no backfill)"
+
+[[rule]]
+match = ["crowsnest", "report"]
+argv = ["crowsnest", "report", "--all-homes"]
+help = "the roster as one self-contained HTML page, on stdout"
+
+# --- openloops: what sessions left owed or blocked ------------------------------------
+# Verify predicates are commands taken from issue bodies: a remote request never runs
+# them (--no-verify). The owner's own scheduled `ol owed` does the verified pass.
+
+[[rule]]
+match = ["ol"]
+argv = ["ol", "brief"]
+value_flags = [{ names = ["-l", "--limit"], pattern = "[0-9]{1,2}" }]
+help = "what sessions left open (syncs openloops' own store first)"
+
+[[rule]]
+match = ["ol", "brief"]
+argv = ["ol", "brief"]
+value_flags = [{ names = ["-l", "--limit"], pattern = "[0-9]{1,2}" }]
+help = "same as bare ol"
+
+[[rule]]
+match = ["ol", "owed"]
+argv = ["ol", "owed", "--no-verify"]
+value_flags = [{ names = ["-l", "--limit"], pattern = "[0-9]{1,2}" }]
+help = "open manual-task issues: what the owner owes the agents"
+
+[[rule]]
+match = ["ol", "blocked"]
+argv = ["ol", "blocked"]
+value_flags = [{ names = ["-l", "--limit"], pattern = "[0-9]{1,2}" }]
+help = "what repos wait on, and what stopped waiting"
+
+[[rule]]
+match = ["ol", "dashboard"]
+argv = ["ol", "dashboard", "--no-verify"]
+help = "all three openloops answers as one HTML page, on stdout"
+
+# --- the snapshot: answers already on disk ---------------------------------------------
+
+[[rule]]
+match = ["snapshot"]
+kind = "file"
+root = "out"
+help = "list the snapshot files, or print one (fast: no command runs)"
+
+# --- dispatch (gated) ------------------------------------------------------------------
+
+[[rule]]
+match = ["crowsnest", "spawn"]
+class = "dispatch"
+# pinned: the session asks before it acts, whatever crowsnest's or the account's default is
+argv = ["crowsnest", "spawn", "--model", "sonnet", "--permission-mode", "default"]
+value_flags = [
+  { names = ["-c", "--cwd"], path_under_roots = true },
+  { names = ["--prompt"], free = true },
+]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[a-z0-9][a-z0-9-]{1,40}"
+help = "start a named session (sonnet) in a directory under the dispatch roots"
+
+# --- what `hatchway snapshot` keeps fresh ----------------------------------------------
+
+[[snapshot]]
+request = "crowsnest triage"
+file = "triage.md"
+
+[[snapshot]]
+request = "crowsnest --brief"
+file = "roster.txt"
+
+[[snapshot]]
+request = "ol owed"
+file = "owed.txt"
+
+[[snapshot]]
+request = "ol blocked"
+file = "blocked.txt"

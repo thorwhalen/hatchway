@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hatchway"
+version = "0.0.1"
+description = "A narrow, logged opening through which an outside agent reaches your tools: an SSH forced command that runs only an allowlist kept as data"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+keywords = ["ssh", "forced-command", "allowlist", "agents", "claude-code", "mcp", "gateway"]
+authors = [{ name = "Thor Whalen" }]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Utilities",
+]
+# No runtime dependencies, on purpose: the gate is what an outside key can reach, and
+# every import is code that runs on its behalf.
+dependencies = []
+
+[project.scripts]
+hatchway = "hatchway.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/thorwhalen/hatchway"
+Repository = "https://github.com/thorwhalen/hatchway"
+Issues = "https://github.com/thorwhalen/hatchway/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.1.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["hatchway"]
+
+[tool.hatch.build.targets.sdist]
+only-include = ["hatchway", "tests", ".github", "README.md", "LICENSE", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "hatchway"]
+addopts = "--doctest-modules"
+
+[tool.ruff]
+line-length = 95
+target-version = "py311"
+
+[tool.wads.ci]
+project_name = "hatchway"
+
+[tool.wads.ci.install]
+extras = "dev"
+
+[tool.wads.ci.testing]
+python_versions = ["3.11", "3.12"]
