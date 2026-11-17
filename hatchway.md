@@ -1,4 +1,4 @@
-> built 2026-11-17 10:27 UTC from 947f977 (main) · hatchway 0.0.2. Details: build_info.json
+> built 2026-11-17 17:08 UTC from 69e332b (main) · hatchway 0.0.3. Details: build_info.json
 
 # index.html.md
 
@@ -44,6 +44,30 @@ For a machine running Claude Code sessions watched by [crowsnest](https://github
 Nothing in it kills, reaps, messages or writes into a running session.
 
 To change it for one machine, copy `hatchway/data/profiles/claude-fleet.toml` to `~/.config/hatchway/profiles/<name>.toml`, edit it, and set `profile = "<name>"` in `~/.config/hatchway/config.toml` (or pass `--profile <name>` to `authorize`, which puts it in that key’s forced command).
+
+## The second transport: MCP
+
+The same profile can be served as MCP tools, for an agent that speaks MCP but cannot open SSH (a claude.ai custom connector, so also the Claude app’s voice mode; Claude Desktop; another machine’s MCP client). One tool per rule: its `tool` name, its flags and names as typed parameters, its `help` as the description. Every call is turned back into the request words and goes through the gate, so it is decided, logged and locked exactly as an SSH call is.
+
+```bash
+pip install 'hatchway[mcp]'
+hatchway mcp --profile claude-ai --list                    # the tools, with their signatures
+hatchway mcp --profile claude-ai --http 8799               # serve on 127.0.0.1:8799/mcp
+hatchway mcp --profile claude-ai --ssh me@laptop --identity key   # each call through that machine's gate
+```
+
+```python
+from hatchway.mcp import mk_server, ssh_runner, routed_runner, with_fallback
+
+server = ssh_runner("root@127.0.0.1", identity="key")         # this machine, as another user
+laptop = ssh_runner("me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222"))  # through a tunnel
+runner = routed_runner(server, {"crowsnest": with_fallback(laptop, server)})
+app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff")).http_app()
+```
+
+The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
+
+**The bundled `claude-ai` profile** is shaped for a conversation, typed or spoken: Claude Code sessions (`session_triage`, `session_roster`, `session_recap`, `session_turns`, `session_ledger`), open loops (`owed_by_owner`, `blocked_work`), GitHub read-only (`list_repos`, `repo_overview`, `read_repo_file`, `list_issues`, `read_issue`; a repository whose name contains `secret` is refused), and a handoff inbox shared with Claude Code through [annals](https://github.com/thorwhalen/annals) (`read_handoffs`, `read_document`, and `post_handoff` in the `handoff` class, whose text goes to the command’s standard input, never its arguments). A machine adds what only it has in a private profile that starts with `extends = "claude-ai"`.
 
 ## Configuration
 
@@ -180,17 +204,17 @@ False
 
 | [`Decision`](_autosummary/hatchway.html.md#hatchway.Decision)(allowed, request[, reason, rule, ...])   | What the gate does with a request: run `argv`, print `path`, or refuse.   |
 |----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| [`Profile`](_autosummary/hatchway.html.md#hatchway.Profile)(rules[, classes, name, snapshot])         | A named set of rules plus the gating of their classes.                    |
+| [`Profile`](_autosummary/hatchway.html.md#hatchway.Profile)(rules[, classes, name, snapshot, ...])    | A named set of rules plus the gating of their classes.                    |
 | [`Rule`](_autosummary/hatchway.html.md#hatchway.Rule)(match[, argv, kind, klass, flags, ...])      | One allowed command shape.                                                |
 | [`Settings`](_autosummary/hatchway.html.md#hatchway.Settings)([profile, path, timeout, roots, ...])    | The resolved configuration the gate and the snapshot run with.            |
 
-### *class* hatchway.Decision(allowed, request, reason='', rule=None, argv=(), path='')
+### *class* hatchway.Decision(allowed, request, reason='', rule=None, argv=(), path='', stdin=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 What the gate does with a request: run `argv`, print `path`, or refuse.
 
-### *class* hatchway.Profile(rules, classes=dict(), name='', snapshot=())
+### *class* hatchway.Profile(rules, classes=dict(), name='', snapshot=(), instructions='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -203,7 +227,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](_autosummary/hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='')
+### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -213,6 +237,11 @@ One allowed command shape.
 file, named by the single positional argument, from the directory `root`).
 `klass` groups rules for gating: a class listed in the profile’s `[classes]`
 table with `requires_flag` is refused until that flag file exists.
+
+`tool`, `param` and `arg` only name things for other transports (the MCP
+tool’s name, its positional parameter’s name and that parameter’s description); `stdin` names a `free` value flag
+whose value is written to the command’s standard input instead of its arguments,
+so a body of text (a note to publish) never lands in `argv`.
 
 ### *class* hatchway.Settings(profile='claude-fleet', path=list(), timeout=120, roots=dict(), dispatch_roots=list(), snapshot_to='', config_dir=config_dir(), data_dir=data_dir())
 
@@ -322,6 +351,7 @@ Run every snapshot request once; return the index that was written.
 | [`config`](_autosummary/hatchway.config.html.md#module-hatchway.config)   | Where hatchway keeps its configuration and its records, and how a profile is found.            |
 |----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
 | [`install`](_autosummary/hatchway.install.html.md#module-hatchway.install) | Putting a hatch on a machine: the `authorized_keys` line, the snapshot timer, the skills.      |
+| [`mcp`](_autosummary/hatchway.mcp.html.md#module-hatchway.mcp)         | The second transport: a profile served as MCP tools, one tool per rule.                        |
 | [`policy`](_autosummary/hatchway.policy.html.md#module-hatchway.policy)   | The allowlist: which command lines an outside agent may run, decided without running anything. |
 
 
@@ -439,6 +469,171 @@ Write `config.toml` with `path` set to where `tools` live, unless one exists.
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 
+# _autosummary/hatchway.mcp.html.md
+
+# hatchway.mcp
+
+The second transport: a profile served as MCP tools, one tool per rule.
+
+The SSH gate is the way in for an agent that can open SSH. An agent that speaks MCP but
+cannot (a claude.ai custom connector, Claude Desktop, another machine’s MCP client) gets
+the same allowlist here: each rule of the profile becomes one tool whose parameters are
+the rule’s flags and names, and every call is turned back into the request words and
+handed to a *runner*, which takes it through the gate. So the same `decide()`, the same
+log, the same gated classes, the same one-call-at-a-time lock, whichever way it arrived.
+
+```pycon
+>>> from hatchway.policy import Profile
+>>> p = Profile.from_dict({"rule": [{"match": ["crowsnest", "triage"],
+...     "argv": ["crowsnest", "triage"], "flags": ["-q", "--quiet"]}]})
+>>> calls = []
+>>> tools = mk_tools(p, runner=lambda req: calls.append(req) or Result(0, "ok", ""))
+>>> [t.__name__ for t in tools]
+['crowsnest_triage']
+>>> tools[0](quiet=True)
+'ok'
+>>> calls
+['crowsnest triage --quiet']
+```
+
+The runner is the seam. [`local_runner()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.local_runner) (the default) runs the gate on this machine;
+[`ssh_runner()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.ssh_runner) sends the request over SSH to a key whose forced command is the gate,
+which is how a process running as its own account reaches a machine’s tools without
+holding any of their credentials. Building the server needs `fastmcp`
+(`pip install 'hatchway[mcp]'`); nothing else in hatchway imports it.
+
+### Module Attributes
+
+| [`DFLT_MAX_CHARS`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_MAX_CHARS)   | how many characters of a command's output one tool call returns; the rest is paged   |
+|-------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| [`DFLT_CLASSES`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_CLASSES)     | reading only                                                                         |
+| [`REFUSED`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.REFUSED)          | the gate's exit statuses a runner may see                                            |
+| [`BUSY`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.BUSY)             | the gate's exit statuses a runner may see                                            |
+
+### Functions
+
+| [`local_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.local_runner)(\*[, agent, profile, timeout, ...])   | Run each request through `hatchway gate` on this machine, as this user.              |
+|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| [`mk_server`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_server)([profile, runner, settings, ...])        | A `FastMCP` server over `profile`'s rules.                                           |
+| [`mk_tool`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_tool)(rule, \*, runner[, max_chars])             | One callable for `rule`, with a real signature, so any MCP host can type it.         |
+| [`mk_tools`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_tools)(profile, \*, runner[, classes, ...])      | The tools for every rule of `profile` in one of `classes`, in profile order.         |
+| [`routed_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.routed_runner)(default, routes)                     | Send a request to the runner its first word names in `routes`, else `default`.       |
+| [`ssh_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.ssh_runner)(destination, \*[, identity, ssh, ...])  | Send each request over SSH to `destination`, whose key's forced command is the gate. |
+| [`tool_name`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tool_name)(rule)                                    | The MCP name of a rule: its `tool` key, else its words joined by underscores.        |
+| [`unreachable`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.unreachable)(result)                                | Whether `result` is ssh failing to connect, as opposed to the far side answering.    |
+| [`with_fallback`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.with_fallback)(primary, fallback, \*[, note, ...])  | `primary`, unless it could not be reached; then `fallback`, with `note` first.       |
+
+### Classes
+
+| [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)(status, out, err)   | What came back from the gate: its exit status, standard output and error.   |
+|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+
+### hatchway.mcp.BUSY *= 75*
+
+the gate’s exit statuses a runner may see
+
+### hatchway.mcp.DFLT_CLASSES *= ('read',)*
+
+reading only
+
+* **Type:**
+  the classes served by default
+
+### hatchway.mcp.DFLT_MAX_CHARS *= 6000*
+
+how many characters of a command’s output one tool call returns; the rest is paged
+
+### hatchway.mcp.REFUSED *= 126*
+
+the gate’s exit statuses a runner may see
+
+### *class* hatchway.mcp.Result(status, out, err)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+What came back from the gate: its exit status, standard output and error.
+
+### hatchway.mcp.local_runner(, agent='mcp', profile=None, timeout=150, busy_retries=6)
+
+Run each request through `hatchway gate` on this machine, as this user.
+
+A subprocess rather than a function call, so the gate’s lock, log and timeout behave
+exactly as they do behind sshd.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)]
+
+### hatchway.mcp.mk_server(profile=None, , runner=None, settings=None, classes=('read',), max_chars=6000, name=None, instructions=None, \*\*server_kwargs)
+
+A `FastMCP` server over `profile`’s rules.
+
+`runner` defaults to [`local_runner()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.local_runner) with the same profile. `server_kwargs`
+go to `FastMCP` (`auth=`, `middleware=`): authentication belongs to whoever
+serves this over a network, not to hatchway.
+
+### hatchway.mcp.mk_tool(rule, , runner, max_chars=6000)
+
+One callable for `rule`, with a real signature, so any MCP host can type it.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)
+
+### hatchway.mcp.mk_tools(profile, , runner, classes=('read',), max_chars=6000)
+
+The tools for every rule of `profile` in one of `classes`, in profile order.
+
+A class left out is not offered at all; one offered is still decided by the gate,
+so a gated class whose flag is absent answers “refused” rather than running.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]
+
+### hatchway.mcp.routed_runner(default, routes)
+
+Send a request to the runner its first word names in `routes`, else `default`.
+
+So one server can answer about sessions from the machine that has them and about
+repositories from another: `routed_runner(server, {"crowsnest": laptop})`.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)]
+
+### hatchway.mcp.ssh_runner(destination, , identity=None, ssh=('ssh', '-T', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8'), timeout=150, busy_retries=6)
+
+Send each request over SSH to `destination`, whose key’s forced command is the gate.
+
+The request travels as the remote command, which sshd hands to the forced command as
+`$SSH_ORIGINAL_COMMAND`; it is never run by a remote shell.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)]
+
+### hatchway.mcp.tool_name(rule)
+
+The MCP name of a rule: its `tool` key, else its words joined by underscores.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### hatchway.mcp.unreachable(result)
+
+Whether `result` is ssh failing to connect, as opposed to the far side answering.
+
+Only then is it safe to ask someone else: the request never reached the gate, so it
+ran nowhere. A timeout is not that (the command may have run), and neither is a
+remote command that happened to exit 255.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### hatchway.mcp.with_fallback(primary, fallback, \*, note="(the first machine did not answer; this is the fallback's view)\\n", is_down=<function unreachable>)
+
+`primary`, unless it could not be reached; then `fallback`, with `note` first.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)]
+
+
 # _autosummary/hatchway.policy.html.md
 
 # hatchway.policy
@@ -474,17 +669,17 @@ False
 
 | [`Decision`](_autosummary/hatchway.policy.html.md#hatchway.policy.Decision)(allowed, request[, reason, rule, ...])   | What the gate does with a request: run `argv`, print `path`, or refuse.                                                |
 |----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| [`Profile`](_autosummary/hatchway.policy.html.md#hatchway.policy.Profile)(rules[, classes, name, snapshot])         | A named set of rules plus the gating of their classes.                                                                 |
+| [`Profile`](_autosummary/hatchway.policy.html.md#hatchway.policy.Profile)(rules[, classes, name, snapshot, ...])    | A named set of rules plus the gating of their classes.                                                                 |
 | [`Rule`](_autosummary/hatchway.policy.html.md#hatchway.policy.Rule)(match[, argv, kind, klass, flags, ...])      | One allowed command shape.                                                                                             |
 | [`ValueFlag`](_autosummary/hatchway.policy.html.md#hatchway.policy.ValueFlag)(names[, pattern, free, ...])            | A flag that takes one value, checked against `pattern` (or free text, or a directory under one of the dispatch roots). |
 
-### *class* hatchway.policy.Decision(allowed, request, reason='', rule=None, argv=(), path='')
+### *class* hatchway.policy.Decision(allowed, request, reason='', rule=None, argv=(), path='', stdin=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 What the gate does with a request: run `argv`, print `path`, or refuse.
 
-### *class* hatchway.policy.Profile(rules, classes=dict(), name='', snapshot=())
+### *class* hatchway.policy.Profile(rules, classes=dict(), name='', snapshot=(), instructions='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -497,7 +692,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](_autosummary/hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='')
+### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -507,6 +702,11 @@ One allowed command shape.
 file, named by the single positional argument, from the directory `root`).
 `klass` groups rules for gating: a class listed in the profile’s `[classes]`
 table with `requires_flag` is refused until that flag file exists.
+
+`tool`, `param` and `arg` only name things for other transports (the MCP
+tool’s name, its positional parameter’s name and that parameter’s description); `stdin` names a `free` value flag
+whose value is written to the command’s standard input instead of its arguments,
+so a body of text (a note to publish) never lands in `argv`.
 
 ### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False)
 
@@ -547,7 +747,7 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-17 10:27 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb"><code>947f977</code></a> on branch <code>main</code>, for **hatchway 0.0.2** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-17 17:08 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155"><code>69e332b</code></a> on branch <code>main</code>, for **hatchway 0.0.3** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -556,7 +756,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb"><code>947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155"><code>69e332beea5d7822e029746e201026c228092155</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -567,9 +767,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44064828488">44064828488</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44133413787">44133413787</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb</code> (in the history of the built commit) |
+| Event commit | <code>69e332beea5d7822e029746e201026c228092155</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -594,13 +794,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.2/">0.0.2</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.3/">0.0.3</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout 947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb
+git checkout 69e332beea5d7822e029746e201026c228092155
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

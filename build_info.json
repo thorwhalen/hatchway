@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-17T10:27:37Z",
+  "built_at": "2026-11-17T17:08:42Z",
   "package": {
     "name": "hatchway",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "display_name": "hatchway",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb",
-    "short_commit": "947f977",
+    "commit": "69e332beea5d7822e029746e201026c228092155",
+    "short_commit": "69e332b",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/hatchway",
-    "commit_url": "https://github.com/thorwhalen/hatchway/commit/947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb",
+    "commit_url": "https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/hatchway",
-    "sha": "947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb",
+    "sha": "69e332beea5d7822e029746e201026c228092155",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "44064828488",
-    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44064828488",
+    "run_id": "44133413787",
+    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44133413787",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -55,16 +55,16 @@
     "docs_dir": "docsrc"
   },
   "site": {
-    "modules_documented": 4,
-    "objects_documented": 38
+    "modules_documented": 5,
+    "objects_documented": 52
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.2",
+    "latest": "0.0.3",
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 69e332beea5d7822e029746e201026c228092155\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,

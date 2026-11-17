@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../_static/documentation_options.js?v=47de8214"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.2" />
+  <meta name="docsearch:version" content="0.0.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -836,11 +836,48 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_profile_dict</span><span class="p">(</span><span class="n">name_or_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">seen</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A profile's TOML as a dict, with ``extends`` resolved.</span>
+
+<span class="sd">    ``extends = "claude-ai"`` takes that profile's rules, classes, snapshot and</span>
+<span class="sd">    instructions first; this file's rules come after them and replace a rule with the</span>
+<span class="sd">    same ``match``. So a machine's private profile adds what only it has without copying</span>
+<span class="sd">    the bundled one. A class table is merged key by key, and a ``requires_flag`` of the</span>
+<span class="sd">    base is kept, so extending never removes a gate.</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">profile_path</span><span class="p">(</span><span class="n">name_or_path</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"profile </span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="si">!r}</span><span class="s2"> extends itself"</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>
+    <span class="n">base_name</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"extends"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">base_name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">d</span>
+    <span class="k">if</span> <span class="n">base_name</span> <span class="o">==</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span> <span class="ow">and</span> <span class="p">(</span><span class="n">BUNDLED_PROFILES</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">.toml"</span><span class="p">)</span> <span class="o">!=</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">base_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+            <span class="n">BUNDLED_PROFILES</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">.toml"</span>
+        <span class="p">)</span>  <span class="c1"># a local copy extends the bundled one</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">_profile_dict</span><span class="p">(</span><span class="n">base_name</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span> <span class="n">seen</span><span class="o">=</span><span class="p">(</span><span class="o">*</span><span class="n">seen</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
+    <span class="n">own</span> <span class="o">=</span> <span class="p">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"match"</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"rule"</span><span class="p">,</span> <span class="p">())}</span>
+    <span class="n">rules</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"rule"</span><span class="p">,</span> <span class="p">())</span> <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"match"</span><span class="p">])</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">own</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="o">**</span><span class="n">base</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">d</span><span class="p">,</span>
+        <span class="s2">"rule"</span><span class="p">:</span> <span class="n">rules</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"rule"</span><span class="p">,</span> <span class="p">())),</span>
+        <span class="c1"># per class, merged: a profile that extends another can add a gate, never drop one</span>
+        <span class="s2">"classes"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="p">{</span><span class="o">**</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"classes"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">{}),</span> <span class="o">**</span><span class="n">v</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="o">**</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"classes"</span><span class="p">,</span> <span class="p">{}),</span> <span class="o">**</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"classes"</span><span class="p">,</span> <span class="p">{})}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">},</span>
+        <span class="s2">"snapshot"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"snapshot"</span><span class="p">,</span> <span class="p">()))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"snapshot"</span><span class="p">,</span> <span class="p">())),</span>
+    <span class="p">}</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">load_profile</span><span class="p">(</span>
     <span class="n">name_or_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_PROFILE</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Profile</span><span class="p">:</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">profile_path</span><span class="p">(</span><span class="n">name_or_path</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Profile</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">tomllib</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">()),</span> <span class="n">name</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Profile</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">_profile_dict</span><span class="p">(</span><span class="n">name_or_path</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>
 </pre></div>
 
                 </article>

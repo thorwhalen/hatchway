@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../_static/documentation_options.js?v=47de8214"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.2" />
+  <meta name="docsearch:version" content="0.0.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -826,7 +826,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
             <span class="nb">list</span><span class="p">(</span><span class="n">decision</span><span class="o">.</span><span class="n">argv</span><span class="p">),</span>
             <span class="n">env</span><span class="o">=</span><span class="n">command_env</span><span class="p">(</span><span class="n">settings</span><span class="p">),</span>
-            <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
+            <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span> <span class="k">if</span> <span class="n">decision</span><span class="o">.</span><span class="n">stdin</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
             <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
             <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
             <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -836,7 +836,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"hatchway: </span><span class="si">{</span><span class="n">decision</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> is not installed on this machine</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">127</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">decision</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
         <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
@@ -893,6 +893,10 @@ window.runMermaid = runMermaid;</script>
             <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">REFUSED</span>
+    <span class="k">if</span> <span class="n">decision</span><span class="o">.</span><span class="n">stdin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># a body of text is the agent's content, not a request</span>
+        <span class="n">record</span><span class="p">[</span><span class="s2">"request"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">decision</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">match</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">" [stdin: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">decision</span><span class="o">.</span><span class="n">stdin</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars]"</span>
+        <span class="p">)</span>
     <span class="n">allowed</span> <span class="o">=</span> <span class="p">{</span>
         <span class="o">**</span><span class="n">record</span><span class="p">,</span>
         <span class="s2">"decision"</span><span class="p">:</span> <span class="s2">"allowed"</span><span class="p">,</span>

@@ -37,4 +37,5 @@
 
    config
    install
+   mcp
    policy

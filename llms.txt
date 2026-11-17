@@ -10,9 +10,10 @@
 - [hatchway](_autosummary/hatchway.html.md): hatchway: a narrow, logged opening through which an outside agent reaches your tools.
 - [hatchway.config](_autosummary/hatchway.config.html.md): Where hatchway keeps its configuration and its records, and how a profile is found.
 - [hatchway.install](_autosummary/hatchway.install.html.md): Putting a hatch on a machine: the &#96;authorized_keys&#96; line, the snapshot timer, the skills.
+- [hatchway.mcp](_autosummary/hatchway.mcp.html.md): The second transport: a profile served as MCP tools, one tool per rule.
 - [hatchway.policy](_autosummary/hatchway.policy.html.md): The allowlist: which command lines an outside agent may run, decided without running anything.
 - [For AI agents](ai-agents.html.md): &#96;hatchway&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-11-17 10:27 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-11-17 17:08 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
 
 ## Optional
 

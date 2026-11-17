@@ -5,7 +5,7 @@ orphan: true
 
 # About this build
 
-This documentation was built on **2026-11-17 10:27 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb"><code>947f977</code></a> on branch <code>main</code>, for **hatchway 0.0.2** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-17 17:08 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155"><code>69e332b</code></a> on branch <code>main</code>, for **hatchway 0.0.3** (from <code>pyproject.toml</code>).
 
 :::{note}
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -15,7 +15,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 | | |
 |---|---|
-| Commit | <a href="https://github.com/thorwhalen/hatchway/commit/947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb"><code>947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb</code></a> |
+| Commit | <a href="https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155"><code>69e332beea5d7822e029746e201026c228092155</code></a> |
 | Branch | <code>main</code> |
 | Tags at this commit | none |
 | Working tree | clean |
@@ -26,9 +26,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 | | |
 |---|---|
 | Repository | <code>thorwhalen/hatchway</code> |
-| Run | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44064828488">44064828488</a> |
+| Run | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44133413787">44133413787</a> |
 | Ref | <code>refs/heads/main</code> |
-| Event commit | <code>947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb</code> (in the history of the built commit) |
+| Event commit | <code>69e332beea5d7822e029746e201026c228092155</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -53,13 +53,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.2/">0.0.2</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.3/">0.0.3</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout 947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb
+git checkout 69e332beea5d7822e029746e201026c228092155
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

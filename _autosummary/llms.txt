@@ -8,6 +8,7 @@
 - [hatchway](hatchway.html.md): hatchway: a narrow, logged opening through which an outside agent reaches your tools.
 - [hatchway.config](hatchway.config.html.md): Where hatchway keeps its configuration and its records, and how a profile is found.
 - [hatchway.install](hatchway.install.html.md): Putting a hatch on a machine: the &#96;authorized_keys&#96; line, the snapshot timer, the skills.
+- [hatchway.mcp](hatchway.mcp.html.md): The second transport: a profile served as MCP tools, one tool per rule.
 - [hatchway.policy](hatchway.policy.html.md): The allowlist: which command lines an outside agent may run, decided without running anything.
 
 ## Optional

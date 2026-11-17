@@ -1,0 +1,35 @@
+hatchway.mcp
+============
+
+.. automodule:: hatchway.mcp
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      DFLT_MAX_CHARS
+      DFLT_CLASSES
+      REFUSED
+      BUSY
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      local_runner
+      mk_server
+      mk_tool
+      mk_tools
+      routed_runner
+      ssh_runner
+      tool_name
+      unreachable
+      with_fallback
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Result
+   

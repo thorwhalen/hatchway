@@ -35,17 +35,17 @@ False
 
 | [`Decision`](#hatchway.Decision)(allowed, request[, reason, rule, ...])   | What the gate does with a request: run `argv`, print `path`, or refuse.   |
 |----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| [`Profile`](#hatchway.Profile)(rules[, classes, name, snapshot])         | A named set of rules plus the gating of their classes.                    |
+| [`Profile`](#hatchway.Profile)(rules[, classes, name, snapshot, ...])    | A named set of rules plus the gating of their classes.                    |
 | [`Rule`](#hatchway.Rule)(match[, argv, kind, klass, flags, ...])      | One allowed command shape.                                                |
 | [`Settings`](#hatchway.Settings)([profile, path, timeout, roots, ...])    | The resolved configuration the gate and the snapshot run with.            |
 
-### *class* hatchway.Decision(allowed, request, reason='', rule=None, argv=(), path='')
+### *class* hatchway.Decision(allowed, request, reason='', rule=None, argv=(), path='', stdin=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 What the gate does with a request: run `argv`, print `path`, or refuse.
 
-### *class* hatchway.Profile(rules, classes=dict(), name='', snapshot=())
+### *class* hatchway.Profile(rules, classes=dict(), name='', snapshot=(), instructions='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -58,7 +58,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='')
+### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -68,6 +68,11 @@ One allowed command shape.
 file, named by the single positional argument, from the directory `root`).
 `klass` groups rules for gating: a class listed in the profile’s `[classes]`
 table with `requires_flag` is refused until that flag file exists.
+
+`tool`, `param` and `arg` only name things for other transports (the MCP
+tool’s name, its positional parameter’s name and that parameter’s description); `stdin` names a `free` value flag
+whose value is written to the command’s standard input instead of its arguments,
+so a body of text (a note to publish) never lands in `argv`.
 
 ### *class* hatchway.Settings(profile='claude-fleet', path=list(), timeout=120, roots=dict(), dispatch_roots=list(), snapshot_to='', config_dir=config_dir(), data_dir=data_dir())
 
@@ -177,4 +182,5 @@ Run every snapshot request once; return the index that was written.
 | [`config`](hatchway.config.html.md#module-hatchway.config)   | Where hatchway keeps its configuration and its records, and how a profile is found.            |
 |----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
 | [`install`](hatchway.install.html.md#module-hatchway.install) | Putting a hatch on a machine: the `authorized_keys` line, the snapshot timer, the skills.      |
+| [`mcp`](hatchway.mcp.html.md#module-hatchway.mcp)         | The second transport: a profile served as MCP tools, one tool per rule.                        |
 | [`policy`](hatchway.policy.html.md#module-hatchway.policy)   | The allowlist: which command lines an outside agent may run, decided without running anything. |

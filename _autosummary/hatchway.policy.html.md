@@ -31,17 +31,17 @@ False
 
 | [`Decision`](#hatchway.policy.Decision)(allowed, request[, reason, rule, ...])   | What the gate does with a request: run `argv`, print `path`, or refuse.                                                |
 |----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| [`Profile`](#hatchway.policy.Profile)(rules[, classes, name, snapshot])         | A named set of rules plus the gating of their classes.                                                                 |
+| [`Profile`](#hatchway.policy.Profile)(rules[, classes, name, snapshot, ...])    | A named set of rules plus the gating of their classes.                                                                 |
 | [`Rule`](#hatchway.policy.Rule)(match[, argv, kind, klass, flags, ...])      | One allowed command shape.                                                                                             |
 | [`ValueFlag`](#hatchway.policy.ValueFlag)(names[, pattern, free, ...])            | A flag that takes one value, checked against `pattern` (or free text, or a directory under one of the dispatch roots). |
 
-### *class* hatchway.policy.Decision(allowed, request, reason='', rule=None, argv=(), path='')
+### *class* hatchway.policy.Decision(allowed, request, reason='', rule=None, argv=(), path='', stdin=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 What the gate does with a request: run `argv`, print `path`, or refuse.
 
-### *class* hatchway.policy.Profile(rules, classes=dict(), name='', snapshot=())
+### *class* hatchway.policy.Profile(rules, classes=dict(), name='', snapshot=(), instructions='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -54,7 +54,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='')
+### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -64,6 +64,11 @@ One allowed command shape.
 file, named by the single positional argument, from the directory `root`).
 `klass` groups rules for gating: a class listed in the profile’s `[classes]`
 table with `requires_flag` is refused until that flag file exists.
+
+`tool`, `param` and `arg` only name things for other transports (the MCP
+tool’s name, its positional parameter’s name and that parameter’s description); `stdin` names a `free` value flag
+whose value is written to the command’s standard input instead of its arguments,
+so a body of text (a note to publish) never lands in `argv`.
 
 ### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False)
 

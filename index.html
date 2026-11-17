@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="_static/documentation_options.js?v=47de8214"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.2" />
+  <meta name="docsearch:version" content="0.0.3" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -393,6 +393,26 @@ hatchway<span class="w"> </span>check<span class="w"> </span><span class="s2">"c
 <p>Nothing in it kills, reaps, messages or writes into a running session.</p>
 <p>To change it for one machine, copy <code class="docutils literal notranslate"><span class="pre">hatchway/data/profiles/claude-fleet.toml</span></code> to <code class="docutils literal notranslate"><span class="pre">~/.config/hatchway/profiles/&lt;name&gt;.toml</span></code>, edit it, and set <code class="docutils literal notranslate"><span class="pre">profile</span> <span class="pre">=</span> <span class="pre">&quot;&lt;name&gt;&quot;</span></code> in <code class="docutils literal notranslate"><span class="pre">~/.config/hatchway/config.toml</span></code> (or pass <code class="docutils literal notranslate"><span class="pre">--profile</span> <span class="pre">&lt;name&gt;</span></code> to <code class="docutils literal notranslate"><span class="pre">authorize</span></code>, which puts it in that key’s forced command).</p>
 </section>
+<section id="the-second-transport-mcp">
+<h2>The second transport: MCP<a class="headerlink" href="#the-second-transport-mcp" title="Link to this heading">#</a></h2>
+<p>The same profile can be served as MCP tools, for an agent that speaks MCP but cannot open SSH (a claude.ai custom connector, so also the Claude app’s voice mode; Claude Desktop; another machine’s MCP client). One tool per rule: its <code class="docutils literal notranslate"><span class="pre">tool</span></code> name, its flags and names as typed parameters, its <code class="docutils literal notranslate"><span class="pre">help</span></code> as the description. Every call is turned back into the request words and goes through the gate, so it is decided, logged and locked exactly as an SSH call is.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">'hatchway[mcp]'</span>
+hatchway<span class="w"> </span>mcp<span class="w"> </span>--profile<span class="w"> </span>claude-ai<span class="w"> </span>--list<span class="w">                    </span><span class="c1"># the tools, with their signatures</span>
+hatchway<span class="w"> </span>mcp<span class="w"> </span>--profile<span class="w"> </span>claude-ai<span class="w"> </span>--http<span class="w"> </span><span class="m">8799</span><span class="w">               </span><span class="c1"># serve on 127.0.0.1:8799/mcp</span>
+hatchway<span class="w"> </span>mcp<span class="w"> </span>--profile<span class="w"> </span>claude-ai<span class="w"> </span>--ssh<span class="w"> </span>me@laptop<span class="w"> </span>--identity<span class="w"> </span>key<span class="w">   </span><span class="c1"># each call through that machine's gate</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">hatchway.mcp</span><span class="w"> </span><span class="kn">import</span> <span class="n">mk_server</span><span class="p">,</span> <span class="n">ssh_runner</span><span class="p">,</span> <span class="n">routed_runner</span><span class="p">,</span> <span class="n">with_fallback</span>
+
+<span class="n">server</span> <span class="o">=</span> <span class="n">ssh_runner</span><span class="p">(</span><span class="s2">"root@127.0.0.1"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"key"</span><span class="p">)</span>         <span class="c1"># this machine, as another user</span>
+<span class="n">laptop</span> <span class="o">=</span> <span class="n">ssh_runner</span><span class="p">(</span><span class="s2">"me@127.0.0.1"</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="s2">"key"</span><span class="p">,</span> <span class="n">ssh</span><span class="o">=</span><span class="p">(</span><span class="s2">"ssh"</span><span class="p">,</span> <span class="s2">"-T"</span><span class="p">,</span> <span class="s2">"-p"</span><span class="p">,</span> <span class="s2">"2222"</span><span class="p">))</span>  <span class="c1"># through a tunnel</span>
+<span class="n">runner</span> <span class="o">=</span> <span class="n">routed_runner</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="p">{</span><span class="s2">"crowsnest"</span><span class="p">:</span> <span class="n">with_fallback</span><span class="p">(</span><span class="n">laptop</span><span class="p">,</span> <span class="n">server</span><span class="p">)})</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">mk_server</span><span class="p">(</span><span class="s2">"claude-ai"</span><span class="p">,</span> <span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">,</span> <span class="n">auth</span><span class="o">=...</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="p">(</span><span class="s2">"read"</span><span class="p">,</span> <span class="s2">"handoff"</span><span class="p">))</span><span class="o">.</span><span class="n">http_app</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The <em>runner</em> is the seam: <code class="docutils literal notranslate"><span class="pre">local_runner</span></code> runs the gate on this machine; <code class="docutils literal notranslate"><span class="pre">ssh_runner</span></code> sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. Authentication is the job of whoever serves it on a network (<code class="docutils literal notranslate"><span class="pre">auth=</span></code> goes to <code class="docutils literal notranslate"><span class="pre">FastMCP</span></code>). Only the classes you name are offered (default: <code class="docutils literal notranslate"><span class="pre">read</span></code>). Long answers are paged: every tool takes <code class="docutils literal notranslate"><span class="pre">offset</span></code>, and the answer says where to resume.</p>
+<p><strong>The bundled <code class="docutils literal notranslate"><span class="pre">claude-ai</span></code> profile</strong> is shaped for a conversation, typed or spoken: Claude Code sessions (<code class="docutils literal notranslate"><span class="pre">session_triage</span></code>, <code class="docutils literal notranslate"><span class="pre">session_roster</span></code>, <code class="docutils literal notranslate"><span class="pre">session_recap</span></code>, <code class="docutils literal notranslate"><span class="pre">session_turns</span></code>, <code class="docutils literal notranslate"><span class="pre">session_ledger</span></code>), open loops (<code class="docutils literal notranslate"><span class="pre">owed_by_owner</span></code>, <code class="docutils literal notranslate"><span class="pre">blocked_work</span></code>), GitHub read-only (<code class="docutils literal notranslate"><span class="pre">list_repos</span></code>, <code class="docutils literal notranslate"><span class="pre">repo_overview</span></code>, <code class="docutils literal notranslate"><span class="pre">read_repo_file</span></code>, <code class="docutils literal notranslate"><span class="pre">list_issues</span></code>, <code class="docutils literal notranslate"><span class="pre">read_issue</span></code>; a repository whose name contains <code class="docutils literal notranslate"><span class="pre">secret</span></code> is refused), and a handoff inbox shared with Claude Code through <a class="reference external" href="https://github.com/thorwhalen/annals">annals</a> (<code class="docutils literal notranslate"><span class="pre">read_handoffs</span></code>, <code class="docutils literal notranslate"><span class="pre">read_document</span></code>, and <code class="docutils literal notranslate"><span class="pre">post_handoff</span></code> in the <code class="docutils literal notranslate"><span class="pre">handoff</span></code> class, whose text goes to the command’s standard input, never its arguments). A machine adds what only it has in a private profile that starts with <code class="docutils literal notranslate"><span class="pre">extends</span> <span class="pre">=</span> <span class="pre">&quot;claude-ai&quot;</span></code>.</p>
+</section>
 <section id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">~/.config/hatchway/config.toml</span></code>, every key optional:</p>
@@ -424,7 +444,7 @@ hatchway<span class="w"> </span>check<span class="w"> </span><span class="s2">"c
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-17 10:27 UTC from <a href="https://github.com/thorwhalen/hatchway/commit/947f977cd4c0e57e71ff0e4659f1a9f7712b8ddb">947f977</a> (main) · hatchway 0.0.2 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-17 17:08 UTC from <a href="https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155">69e332b</a> (main) · hatchway 0.0.3 · <a href="about-this-build.html">about this build</a></p>
 
                 </article>
               
@@ -465,6 +485,7 @@ hatchway<span class="w"> </span>check<span class="w"> </span><span class="s2">"c
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-get">What you get</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-bundled-profile-claude-fleet">The bundled profile: <code class="docutils literal notranslate"><span class="pre">claude-fleet</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-second-transport-mcp">The second transport: MCP</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-security-model-in-one-paragraph">The security model, in one paragraph</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#agents">Agents</a></li>
