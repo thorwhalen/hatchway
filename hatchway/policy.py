@@ -261,6 +261,8 @@ def decide(
             f"got {len(positional)}",
             rule,
         )
+    if rule.stdin and stdin is None:
+        return _refuse(request, f"{rule.stdin} is required", rule)
     if rule.kind == "file":
         return _decide_file(request, rule, positional, roots or {})
     # Positionals go after `--` so a name can never be read as an option by the tool.

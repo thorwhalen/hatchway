@@ -177,6 +177,10 @@ def gate(
             settings=settings,
         )
         return REFUSED
+    if decision.stdin is not None:  # a body of text is the agent's content, not a request
+        record["request"] = (
+            " ".join(decision.rule.match) + f" [stdin: {len(decision.stdin)} chars]"
+        )
     allowed = {
         **record,
         "decision": "allowed",

@@ -121,8 +121,9 @@ def ssh_runner(
     base = list(ssh) + (["-i", identity, "-o", "IdentitiesOnly=yes"] if identity else [])
 
     def run(request: str) -> Result:
+        # `--` so neither the destination nor the request can be read as an ssh option
         return _run_gate(
-            [*base, destination, request], timeout=timeout, busy_retries=busy_retries
+            [*base, "--", destination, request], timeout=timeout, busy_retries=busy_retries
         )
 
     return run
@@ -145,19 +146,42 @@ def routed_runner(default: Runner, routes: Mapping[str, Runner]) -> Runner:
     return run
 
 
+def unreachable(result: Result) -> bool:
+    """Whether ``result`` is ssh failing to connect, as opposed to the far side answering.
+
+    Only then is it safe to ask someone else: the request never reached the gate, so it
+    ran nowhere. A timeout is not that (the command may have run), and neither is a
+    remote command that happened to exit 255.
+    """
+    err = result.err.lower()
+    return result.status == UNREACHABLE and any(
+        s in err
+        for s in (
+            "ssh: connect",
+            "connection refused",
+            "connection closed",
+            "connection reset",
+            "connection timed out",
+            "kex_exchange",
+            "could not resolve",
+            "no route to host",
+            "operation timed out",
+        )
+    )
+
+
 def with_fallback(
     primary: Runner,
     fallback: Runner,
     *,
     note: str = "(the first machine did not answer; this is the fallback's view)\n",
-    statuses: Iterable[int] = (UNREACHABLE, 124),
+    is_down: Callable[[Result], bool] = unreachable,
 ) -> Runner:
     """``primary``, unless it could not be reached; then ``fallback``, with ``note`` first."""
-    statuses = frozenset(statuses)
 
     def run(request: str) -> Result:
         result = primary(request)
-        if result.status not in statuses:
+        if not is_down(result):
             return result
         second = fallback(request)
         return Result(second.status, note + second.out, second.err)
@@ -239,14 +263,16 @@ def mk_tool(rule: Rule, *, runner: Runner, max_chars: int = DFLT_MAX_CHARS) -> C
         params.append(inspect.Parameter(pname, _KW, default=False, annotation=bool))
     for pname in value_flags:
         params.append(inspect.Parameter(pname, _KW, default=None, annotation=str | None))
-    params.append(
-        inspect.Parameter(
-            "offset",
-            _KW,
-            default=0,
-            annotation=_described(int, "where to resume a long answer (it says when)"),
+    pages = rule.klass == "read"  # paging re-runs the command: never for one that writes
+    if pages:
+        params.append(
+            inspect.Parameter(
+                "offset",
+                _KW,
+                default=0,
+                annotation=_described(int, "where to resume a long answer (it says when)"),
+            )
         )
-    )
 
     def tool(**kw) -> str:
         words = list(rule.match)
@@ -258,7 +284,8 @@ def mk_tool(rule: Rule, *, runner: Runner, max_chars: int = DFLT_MAX_CHARS) -> C
         if names:
             words += list(names) if many else [names]
         result = runner(shlex.join(words))
-        return _answer(result, offset=max(0, int(kw.get("offset") or 0)), max_chars=max_chars)
+        offset = max(0, int(kw.get("offset") or 0)) if pages else 0
+        return _answer(result, offset=offset, max_chars=max_chars)
 
     tool.__name__ = tool_name(rule)
     tool.__doc__ = rule.help or " ".join(rule.match)
@@ -315,10 +342,17 @@ def mk_server(
     from fastmcp import FastMCP
 
     settings = settings or load_settings()
-    profile_name = profile if isinstance(profile, str) else None
-    if not isinstance(profile, Profile):
-        profile = load_profile(profile or settings.profile, settings=settings)
-    runner = runner or local_runner(profile=profile_name)
+    if isinstance(profile, Profile):
+        if runner is None:
+            # the gate loads profiles by name: tools built from an object it cannot load
+            # would be decided against a different profile
+            raise ValueError(
+                "a Profile object needs an explicit runner; pass its name instead"
+            )
+    else:
+        profile = profile or settings.profile
+        runner = runner or local_runner(profile=profile)
+        profile = load_profile(profile, settings=settings)
     server = FastMCP(
         name or f"hatchway-{profile.name or 'profile'}",
         instructions=instructions if instructions is not None else profile.instructions,

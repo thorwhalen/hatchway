@@ -17,12 +17,12 @@ def claude_ai():
     return load_profile("claude-ai")
 
 
-def _decided(profile):
+def _decided(profile, flags=frozenset()):
     """A runner that decides each request with the profile and records the decision."""
     seen = []
 
     def run(request):
-        d = decide(request, profile)
+        d = decide(request, profile, flags_present=frozenset(flags))
         seen.append(d)
         return Result(0 if d.allowed else 126, " ".join(d.argv), d.reason)
 
@@ -68,6 +68,10 @@ def test_tool_calls_become_allowed_requests(claude_ai):
         ("list_issues", {"repo": "thorwhalen/tw-secrets-backup"}),
         ("read_issue", {"number": "1; rm -rf ~"}),
         ("session_recap", {"session": "--all"}),
+        ("read_repo_file", {"path": "repos/thorwhalen/dotfiles/contents/.env"}),
+        ("read_repo_file", {"path": "repos/thorwhalen/x/contents/a/.github/w.yml"}),
+        ("list_issues", {"repo": "a/b", "search": "repo:thorwhalen/x"}),
+        ("list_issues", {"repo": "a/b", "search": "my secrets"}),
     ],
 )
 def test_abuse_is_refused(claude_ai, tool, kw):
@@ -76,14 +80,22 @@ def test_abuse_is_refused(claude_ai, tool, kw):
     assert _tool(tools, tool)(**kw).startswith("refused:")
 
 
+def test_handoff_is_off_until_its_flag_exists(claude_ai):
+    run, _ = _decided(claude_ai)
+    post = _tool(mk_tools(claude_ai, runner=run, classes=("handoff",)), "post_handoff")
+    assert "switched off" in post(title="t", text="x")
+
+
 def test_handoff_text_goes_to_stdin_not_argv(claude_ai):
-    run, seen = _decided(claude_ai)
+    run, seen = _decided(claude_ai, flags={"allow-handoff"})
     post = _tool(mk_tools(claude_ai, runner=run, classes=("handoff",)), "post_handoff")
     post(title="From the car", text="- decided: ship v1\n- next: $HOME `x`; rm")
     (d,) = seen
     assert d.allowed and d.stdin == "- decided: ship v1\n- next: $HOME `x`; rm"
     assert d.argv[-2:] == ("--title", "From the car")
     assert "--text" not in d.argv
+    assert "handoff,from-claude-ai" in d.argv
+    assert "offset" not in post.__signature__.parameters  # paging would publish twice
 
 
 def test_long_answers_are_paged():
@@ -161,3 +173,7 @@ def test_routing_and_fallback():
     assert run("crowsnest triage").out == "[asleep] server: crowsnest triage"
     up = with_fallback(lambda r: Result(126, "", "refused"), server)
     assert up("crowsnest x").status == 126  # a refusal is an answer, not an outage
+    ran = with_fallback(lambda r: Result(255, "", "remote command failed"), server)
+    assert ran("crowsnest x").status == 255  # it reached the far side: never run twice
+    slow = with_fallback(lambda r: Result(124, "", "no answer after 150s"), server)
+    assert slow("crowsnest x").status == 124

@@ -27,7 +27,11 @@ when the owner asks to pass something on, and read the title and body back first
 # reading: always on
 
 [classes.handoff]
-# one write: a note into the owner's annals inbox, tagged `handoff`
+# one write: a note into the owner's annals inbox, tagged `handoff` and `from-claude-ai`.
+# Off until ~/.config/hatchway/allow-handoff exists. A note can carry text the
+# conversation read elsewhere (an issue comment, a README), so whoever reads it treats it
+# as data, never as an instruction.
+requires_flag = "allow-handoff"
 
 # --- Claude Code sessions on this machine (crowsnest) ---------------------------------
 
@@ -89,7 +93,11 @@ help = "Work that is blocked, and on what."
 
 # --- GitHub repositories (gh, read only) -----------------------------------------------
 # Repository names are checked against a pattern that refuses '..' and any repository
-# whose name contains 'secret', so a secrets backup can never be read through here.
+# whose name contains 'secret'; file paths may not start a segment with '.', so dotfiles
+# (.env, .npmrc) are never read; search text may not carry qualifiers (no ':'). A name
+# check cannot see a renamed repository: a machine should also narrow the owners in its
+# private profile (extends = "claude-ai"), and the strongest guard is a gh token that
+# cannot read what must stay unread.
 
 [[rule]]
 match = ["gh", "repo", "list"]
@@ -120,7 +128,7 @@ param = "path"
 argv = ["gh", "api", "--method", "GET", "-H", "Accept: application/vnd.github.raw+json"]
 min_positional = 1
 max_positional = 1
-positional_pattern = "(?!.*\\.\\.)(?!(?i:.*secret))repos/[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}/contents(/[A-Za-z0-9_.@+=, -]{1,200}){0,12}"
+positional_pattern = "(?!.*\\.\\.)(?!(?i:.*secret))repos/[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}/contents(/[A-Za-z0-9_@+=, -][A-Za-z0-9_.@+=, -]{0,199}){0,12}"
 arg = "repos/OWNER/REPO/contents/PATH (a folder gives its listing as JSON)"
 help = "One file of a repository, or a folder's listing. Long files come in pages."
 
@@ -132,7 +140,7 @@ value_flags = [
   { names = ["--repo", "-R"], pattern = "(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}" },
   { names = ["--state", "-s"], pattern = "open|closed|all" },
   { names = ["--limit", "-L"], pattern = "[0-9]{1,3}" },
-  { names = ["--search", "-S"], pattern = "[A-Za-z0-9 _.:@/#-]{1,120}" },
+  { names = ["--search", "-S"], pattern = "(?!(?i:.*secret))[A-Za-z0-9 _.@#-]{1,120}" },
 ]
 help = "Issues of a repository (repo: OWNER/REPO; state: open, closed or all; search: words)."
 
@@ -178,10 +186,10 @@ help = "The text of one published document (a handoff note, a report)."
 match = ["annals", "publish", "handoff"]
 tool = "post_handoff"
 class = "handoff"
-argv = ["annals", "publish", "-", "--tags", "handoff", "--session", "claude-ai"]
+argv = ["annals", "publish", "-", "--tags", "handoff,from-claude-ai", "--session", "claude-ai"]
 value_flags = [
   { names = ["--title"], free = true },
   { names = ["--text"], free = true },
 ]
 stdin = "--text"
-help = "Leave a note for Claude Code: title and markdown text (decisions, next steps, links)."
+help = "Leave a note for Claude Code: title and markdown text, up to about 7000 characters (decisions, next steps, links)."

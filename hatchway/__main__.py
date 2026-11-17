@@ -91,6 +91,11 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--identity", help="the ssh key for --ssh")
     m.add_argument("--classes", default="read", help="comma separated (default: read)")
     m.add_argument("--http", type=int, help="serve streamable HTTP on 127.0.0.1:PORT")
+    m.add_argument(
+        "--no-auth",
+        action="store_true",
+        help="required with --http: this serves WITHOUT authentication, to this machine",
+    )
     m.add_argument("--list", action="store_true", help="print the tools and exit")
 
     args = ap.parse_args(argv)
@@ -103,9 +108,17 @@ def main(argv: list[str] | None = None) -> int:
         runner = (
             ssh_runner(args.ssh, identity=args.identity)
             if args.ssh
-            else local_runner(profile=args.profile)
+            else local_runner(profile=args.profile or settings.profile)
         )
-        profile = load_profile(args.profile or settings.profile, settings=settings)
+        name = args.profile or settings.profile
+        if args.ssh and not args.profile:
+            ap.error("--ssh needs --profile: the far gate decides with the profile it is told")
+        profile = load_profile(name, settings=settings)
+        if args.http and not args.no_auth:
+            ap.error(
+                "--http serves with no authentication (any process here can call it); "
+                "pass --no-auth to accept that, or serve hatchway.mcp.mk_server(auth=...)"
+            )
         if args.list:
             for t in mk_tools(profile, runner=runner, classes=classes):
                 print(f"{t.__name__}{t.__signature__}  {t.__doc__}")
