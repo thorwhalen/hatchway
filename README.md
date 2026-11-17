@@ -53,8 +53,10 @@ hatchway mcp --profile claude-ai --ssh me@laptop --identity key   # each call th
 ```python
 from hatchway.mcp import mk_server, ssh_runner, routed_runner, with_fallback
 
-server = ssh_runner("root@127.0.0.1", identity="key")         # this machine, as another user
-laptop = ssh_runner("me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222"))  # through a tunnel
+server = ssh_runner("root@127.0.0.1", identity="key")  # this machine, as another user
+laptop = ssh_runner(
+    "me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222")
+)  # through a tunnel
 runner = routed_runner(server, {"crowsnest": with_fallback(laptop, server)})
 app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff")).http_app()
 ```
