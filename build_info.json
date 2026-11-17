@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-11-17T10:25:27Z",
+  "package": {
+    "name": "hatchway",
+    "version": "0.0.1",
+    "display_name": "hatchway",
+    "source": "pyproject.toml"
+  },
+  "git": {
+    "available": true,
+    "commit": "93ac9539c832988aeee58072abfb02318b03e9c4",
+    "short_commit": "93ac953",
+    "branch": "main",
+    "tags": [],
+    "dirty": false,
+    "remote_url": "https://github.com/thorwhalen/hatchway",
+    "commit_url": "https://github.com/thorwhalen/hatchway/commit/93ac9539c832988aeee58072abfb02318b03e9c4",
+    "error": null
+  },
+  "ci": {
+    "provider": "github",
+    "repository": "thorwhalen/hatchway",
+    "sha": "93ac9539c832988aeee58072abfb02318b03e9c4",
+    "sha_in_history": true,
+    "ref": "refs/heads/main",
+    "ref_name": "main",
+    "run_id": "44064500111",
+    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44064500111",
+    "server_url": "https://github.com"
+  },
+  "tools": {
+    "epythet": "0.2.22",
+    "sphinx": "9.1.1",
+    "docutils": "0.22.4",
+    "python": "3.12.16"
+  },
+  "config": {
+    "theme": "auto",
+    "html_theme": "pydata_sphinx_theme",
+    "accent": "#006c34",
+    "mode": "auto",
+    "api_generator": "autosummary",
+    "ignore": [
+      "tests/",
+      "scrap/",
+      "examples/"
+    ],
+    "agent_outputs": true,
+    "aggregates": [
+      "md"
+    ],
+    "ai_artifacts": true,
+    "provenance": true,
+    "docs_dir": "docsrc"
+  },
+  "site": {
+    "modules_documented": 4,
+    "objects_documented": 38
+  },
+  "pypi": {
+    "checked": true,
+    "latest": "0.0.2",
+    "relation": "behind",
+    "error": null
+  },
+  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 93ac9539c832988aeee58072abfb02318b03e9c4\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "warnings": [],
+  "alignment": {
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.1) is behind the latest release on PyPI (0.0.2): `pip install hatchway` gives newer code than these docs describe."
+    ]
+  }
+}

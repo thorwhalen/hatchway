@@ -1,0 +1,22 @@
+hatchway.config
+===============
+
+.. automodule:: hatchway.config
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      config_dir
+      data_dir
+      load_profile
+      load_settings
+      profile_path
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Settings
+   

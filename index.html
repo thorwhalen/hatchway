@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="index.html.md">
+<link rel="describedby" href="llms.txt" type="text/markdown">
+<link rel="alternate" type="text/markdown" href="index.html.md">
+<link rel="describedby" href="llms.txt">
+    <title>hatchway &#8212; hatchway</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/epythet.css?v=5785dcac" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=fd10adb8"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API reference" href="api.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.1" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">hatchway</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="ai-agents.html">
+    For AI agents
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/thorwhalen/hatchway" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="ai-agents.html">
+    For AI agents
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/thorwhalen/hatchway" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <!-- generated by epythet -->
+<section id="hatchway">
+<h1>hatchway<a class="headerlink" href="#hatchway" title="Link to this heading">#</a></h1>
+<p>A narrow, logged opening through which an outside agent reaches your tools.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>hatchway
+hatchway<span class="w"> </span>authorize<span class="w"> </span><span class="s2">"ssh-ed25519 AAAA... my-agent"</span><span class="w"> </span>--agent<span class="w"> </span>assistant<span class="w">   </span><span class="c1"># one confined key</span>
+hatchway<span class="w"> </span>check<span class="w"> </span><span class="s2">"crowsnest triage"</span><span class="w">                                     </span><span class="c1"># what the gate would do</span>
+</pre></div>
+</div>
+<p>An agent that lives somewhere else (a personal assistant on its own cloud VM, another machine’s scheduler, a phone shortcut) gets one SSH key. That key can do exactly one thing: run <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">gate</span></code>, which reads the requested command line, checks it against a <strong>profile</strong> (an allowlist kept as a TOML file), logs the call, and runs the allowed command directly, never through a shell. Anything not in the profile is refused with a reason.</p>
+<p>It is the “reach in” half of connecting an outside agent to the tools on your machine, with no new server, no open port and no new dependency: OpenSSH already has forced commands, and hatchway is the policy and the bookkeeping around one.</p>
+<section id="what-you-get">
+<h2>What you get<a class="headerlink" href="#what-you-get" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>An allowlist as data.</strong> A rule names the words the agent sends, the command that actually runs (with fixed arguments the agent cannot remove, such as <code class="docutils literal notranslate"><span class="pre">--no-verify</span></code>), and exactly which flags and names it may add. Names are checked against a pattern and passed after <code class="docutils literal notranslate"><span class="pre">--</span></code>, so they can never be read as options. Shell characters are refused outright.</p></li>
+<li><p><strong>A confined key.</strong> <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">authorize</span></code> writes one <code class="docutils literal notranslate"><span class="pre">authorized_keys</span></code> line with <code class="docutils literal notranslate"><span class="pre">command=&quot;hatchway</span> <span class="pre">gate</span> <span class="pre">--agent</span> <span class="pre">NAME&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">restrict</span></code> (no shell, no port, agent or X11 forwarding, no pty), and by default <code class="docutils literal notranslate"><span class="pre">from=&quot;100.64.0.0/10,fd7a:115c:a1e0::/48&quot;</span></code>, so the key works only from a Tailscale tailnet even if sshd is reachable elsewhere. It keeps every other line, backs the file up first, and is idempotent. <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">revoke</span> <span class="pre">--agent</span> <span class="pre">NAME</span></code> takes it out.</p></li>
+<li><p><strong>A log of every call</strong> in <code class="docutils literal notranslate"><span class="pre">~/.local/share/hatchway/calls.jsonl</span></code>: when, which agent, from where, what was asked, allowed or refused, exit status. Never the output. <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">log</span></code> shows the tail.</p></li>
+<li><p><strong>Gated classes.</strong> A rule can belong to a class that stays off until a flag file exists. The bundled profile’s <code class="docutils literal notranslate"><span class="pre">dispatch</span></code> class (starting a Claude Code session) needs both <code class="docutils literal notranslate"><span class="pre">~/.config/hatchway/allow-dispatch</span></code> and a list of directories it may start sessions in.</p></li>
+<li><p><strong>A snapshot for pulling instead of waiting.</strong> <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">snapshot</span></code> runs the profile’s snapshot requests (through the same allowlist) and writes the answers atomically to <code class="docutils literal notranslate"><span class="pre">~/.local/share/hatchway/out/</span></code>, with an <code class="docutils literal notranslate"><span class="pre">index.json</span></code>. The agent reads them through the gate (<code class="docutils literal notranslate"><span class="pre">snapshot</span> <span class="pre">triage.md</span></code>) without waiting for anything to run. <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">schedule</span> <span class="pre">--every</span> <span class="pre">300</span></code> keeps them fresh with launchd (macOS) or a systemd user timer (Linux).</p></li>
+<li><p><strong>Skills for the agents that set it up.</strong> <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">install-skills</span></code> links the bundled skills into one or more Claude Code homes.</p></li>
+</ul>
+</section>
+<section id="the-bundled-profile-claude-fleet">
+<h2>The bundled profile: <code class="docutils literal notranslate"><span class="pre">claude-fleet</span></code><a class="headerlink" href="#the-bundled-profile-claude-fleet" title="Link to this heading">#</a></h2>
+<p>For a machine running Claude Code sessions watched by <a class="reference external" href="https://github.com/thorwhalen/crowsnest">crowsnest</a> (live sessions) and <a class="reference external" href="https://github.com/thorwhalen/openloops">openloops</a> (what sessions left owed or blocked). <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">help</span></code> prints it, and it is what the agent gets when it sends <code class="docutils literal notranslate"><span class="pre">help</span></code>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Request</p></th>
+<th class="head"><p>Runs</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">crowsnest</span> <span class="pre">[--brief|--json]</span></code></p></td>
+<td><p>the roster across every configured Claude home</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">crowsnest</span> <span class="pre">triage</span> <span class="pre">[-q]</span> <span class="pre">[--json]</span></code></p></td>
+<td><p>what needs you, what is safe to close, what is working</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">crowsnest</span> <span class="pre">show|turns|recap|brief</span> <span class="pre">NAME</span></code></p></td>
+<td><p>one session (show and turns quote its transcript)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">crowsnest</span> <span class="pre">ledger</span> <span class="pre">[NAME...]</span></code>, <code class="docutils literal notranslate"><span class="pre">groups</span></code>, <code class="docutils literal notranslate"><span class="pre">synopsis</span> <span class="pre">GROUP</span></code>, <code class="docutils literal notranslate"><span class="pre">questions</span></code>, <code class="docutils literal notranslate"><span class="pre">lineage</span></code>, <code class="docutils literal notranslate"><span class="pre">report</span></code></p></td>
+<td><p>the rest of crowsnest’s read side</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ol</span></code>, <code class="docutils literal notranslate"><span class="pre">ol</span> <span class="pre">owed</span></code>, <code class="docutils literal notranslate"><span class="pre">ol</span> <span class="pre">blocked</span></code>, <code class="docutils literal notranslate"><span class="pre">ol</span> <span class="pre">dashboard</span></code></p></td>
+<td><p>openloops, always with <code class="docutils literal notranslate"><span class="pre">--no-verify</span></code> (verify predicates are commands taken from issue bodies, and a remote request never runs them)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">snapshot</span> <span class="pre">[FILE]</span></code></p></td>
+<td><p>list or print the snapshot files</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">crowsnest</span> <span class="pre">spawn</span> <span class="pre">NAME</span> <span class="pre">--cwd</span> <span class="pre">DIR</span> <span class="pre">--prompt</span> <span class="pre">TEXT</span></code></p></td>
+<td><p><strong>gated</strong>: starts a session on <code class="docutils literal notranslate"><span class="pre">sonnet</span></code>, in a directory under the dispatch roots</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Nothing in it kills, reaps, messages or writes into a running session.</p>
+<p>To change it for one machine, copy <code class="docutils literal notranslate"><span class="pre">hatchway/data/profiles/claude-fleet.toml</span></code> to <code class="docutils literal notranslate"><span class="pre">~/.config/hatchway/profiles/&lt;name&gt;.toml</span></code>, edit it, and set <code class="docutils literal notranslate"><span class="pre">profile</span> <span class="pre">=</span> <span class="pre">&quot;&lt;name&gt;&quot;</span></code> in <code class="docutils literal notranslate"><span class="pre">~/.config/hatchway/config.toml</span></code> (or pass <code class="docutils literal notranslate"><span class="pre">--profile</span> <span class="pre">&lt;name&gt;</span></code> to <code class="docutils literal notranslate"><span class="pre">authorize</span></code>, which puts it in that key’s forced command).</p>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">~/.config/hatchway/config.toml</span></code>, every key optional:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"claude-fleet"</span>
+<span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"~/.local/bin"</span><span class="p">]</span><span class="w">           </span><span class="c1"># where the commands live (sshd's PATH is minimal)</span>
+<span class="n">timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span>
+<span class="k">[roots]</span><span class="w">                           </span><span class="c1"># extra directories file rules may serve, by name</span>
+<span class="k">[dispatch]</span>
+<span class="n">roots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"~/projects"</span><span class="p">]</span><span class="w">            </span><span class="c1"># where a gated spawn may start a session</span>
+<span class="k">[snapshot]</span>
+<span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span><span class="w">                           </span><span class="c1"># optional private copy: a local dir or host:path</span>
+</pre></div>
+</div>
+</section>
+<section id="the-security-model-in-one-paragraph">
+<h2>The security model, in one paragraph<a class="headerlink" href="#the-security-model-in-one-paragraph" title="Link to this heading">#</a></h2>
+<p>What the key can do is the profile, so read it before you authorise a key. Read commands still send what they read to wherever the agent runs: <code class="docutils literal notranslate"><span class="pre">crowsnest</span> <span class="pre">show</span></code> quotes your sessions’ transcripts, so authorise only an agent you would show them to. Keep the <code class="docutils literal notranslate"><span class="pre">from=</span></code> restriction. If the agent joins your Tailscale tailnet, give it a policy that allows <strong>only TCP port 22</strong> to the machines it serves and <strong>no Tailscale SSH rule</strong>: Tailscale SSH authenticates by tailnet identity and never reads <code class="docutils literal notranslate"><span class="pre">authorized_keys</span></code>, so it would bypass the gate entirely. <code class="docutils literal notranslate"><span class="pre">100.64.0.0/10</span></code> is also ordinary carrier-grade NAT space, so once you know the agent’s own tailnet address, narrow <code class="docutils literal notranslate"><span class="pre">--from</span></code> to it (<code class="docutils literal notranslate"><span class="pre">--from</span> <span class="pre">100.x.y.z/32</span></code>). Leave dispatch off until you have watched the log for a while: a session it starts runs code as you. The bundled rule pins <code class="docutils literal notranslate"><span class="pre">--model</span> <span class="pre">sonnet</span></code> and <code class="docutils literal notranslate"><span class="pre">--permission-mode</span> <span class="pre">default</span></code> (the session asks before acting), refuses a prompt that starts with <code class="docutils literal notranslate"><span class="pre">-</span></code>, and starts sessions only under the directories you list.</p>
+<p>Also built in: the commands run with an allowlisted environment (nothing the connecting client can set reaches them beyond <code class="docutils literal notranslate"><span class="pre">LANG</span></code>), in their own process group so a timeout stops their children too, one call at a time per agent (a concurrent call is refused with exit 75), and every allowed call is logged before it runs, so a dropped connection still leaves its line.</p>
+</section>
+<section id="agents">
+<h2>Agents<a class="headerlink" href="#agents" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">hatchway</span></code> skill: install and verify a connection for an outside agent on this machine (the steps, the checks, the Tailscale policy).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hatchway-muse</span></code> skill: when a task would be better handed to a personal Muse agent (Meta), which integration pattern fits, and the exact prompt to give it.</p></li>
+</ul>
+<p class="epythet-aggregates">This documentation as a single file: <a href="hatchway.md">hatchway.md</a> (Markdown, for agents).</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-17 10:25 UTC from <a href="https://github.com/thorwhalen/hatchway/commit/93ac9539c832988aeee58072abfb02318b03e9c4">93ac953</a> (main) · hatchway 0.0.1 · <a href="about-this-build.html">about this build</a></p>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="api.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-you-get">What you get</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-bundled-profile-claude-fleet">The bundled profile: <code class="docutils literal notranslate"><span class="pre">claude-fleet</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-security-model-in-one-paragraph">The security model, in one paragraph</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#agents">Agents</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/index.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

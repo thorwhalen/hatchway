@@ -1,0 +1,40 @@
+﻿hatchway
+========
+
+.. automodule:: hatchway
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      authorize
+      decide
+      describe
+      gate
+      install_schedule
+      install_skills
+      key_line
+      load_profile
+      load_settings
+      revoke
+      snapshot
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Decision
+      Profile
+      Rule
+      Settings
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   config
+   install
+   policy

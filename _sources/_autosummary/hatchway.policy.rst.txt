@@ -1,0 +1,22 @@
+hatchway.policy
+===============
+
+.. automodule:: hatchway.policy
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      decide
+      describe
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Decision
+      Profile
+      Rule
+      ValueFlag
+   

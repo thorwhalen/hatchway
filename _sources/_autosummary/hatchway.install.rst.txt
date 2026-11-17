@@ -1,0 +1,23 @@
+hatchway.install
+================
+
+.. automodule:: hatchway.install
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      authorize
+      backup
+      claude_homes
+      hatchway_bin
+      install_schedule
+      install_skills
+      key_line
+      revoke
+      schedule_units
+      self_test
+      setup
+      write_config
+   

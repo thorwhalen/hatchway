@@ -1,0 +1,15 @@
+# hatchway
+
+> A narrow, logged opening through which an outside agent reaches your tools: an SSH forced command that runs only an allowlist kept as data
+
+
+## Pages in this subsection
+
+- [hatchway](hatchway.html.md): hatchway: a narrow, logged opening through which an outside agent reaches your tools.
+- [hatchway.config](hatchway.config.html.md): Where hatchway keeps its configuration and its records, and how a profile is found.
+- [hatchway.install](hatchway.install.html.md): Putting a hatch on a machine: the &#96;authorized_keys&#96; line, the snapshot timer, the skills.
+- [hatchway.policy](hatchway.policy.html.md): The allowlist: which command lines an outside agent may run, decided without running anything.
+
+## Optional
+
+- [Top-level llms.txt](../llms.txt): Complete documentation index.
