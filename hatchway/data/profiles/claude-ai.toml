@@ -1,0 +1,187 @@
+# claude-ai: what a claude.ai conversation (typed, or in the Claude app's voice mode) may
+# ask of a machine through a custom connector served by `hatchway.mcp`.
+#
+# Read-first, and shaped for voice: few tools, short answers, paging for depth (every
+# tool takes `offset`). The `handoff` class writes one thing only, a note into the
+# owner's own annals inbox, which Claude Code sessions read back; it is reversible
+# (annals keeps a bin) and touches no session.
+#
+# A machine adds what only it has (a snapshot file, a local index) in a private profile
+# with `extends = "claude-ai"` in ~/.config/hatchway/profiles/. Nothing personal here.
+
+name = "claude-ai"
+
+instructions = """
+Tools into the owner's own machines: their Claude Code sessions, their open loops, their \
+GitHub repositories, and a handoff inbox shared with Claude Code. Often used by voice, so \
+call one tool at a time, start with the overview tools (session_triage, repo_overview, \
+list_issues, read_handoffs) and only then read in depth (read_repo_file, read_issue, \
+session_turns). Long answers come in pages: the answer says which offset to ask for next. \
+Summarise what comes back in a few spoken sentences unless asked for detail. A \
+'refused:' answer means the request is outside what this connector allows; say so, do \
+not retry with variations. post_handoff writes a note Claude Code will read: use it \
+when the owner asks to pass something on, and read the title and body back first.
+"""
+
+[classes.read]
+# reading: always on
+
+[classes.handoff]
+# one write: a note into the owner's annals inbox, tagged `handoff`
+
+# --- Claude Code sessions on this machine (crowsnest) ---------------------------------
+
+[[rule]]
+match = ["crowsnest", "triage"]
+tool = "session_triage"
+argv = ["crowsnest", "triage", "--all-homes", "--quiet"]
+help = "Which Claude Code sessions need the owner, which are safe to close, which are working."
+
+[[rule]]
+match = ["crowsnest", "roster"]
+tool = "session_roster"
+argv = ["crowsnest", "roster", "--all-homes", "--brief"]
+help = "Every live Claude Code session, one line each: status, age, name, project, model."
+
+[[rule]]
+match = ["crowsnest", "recap"]
+tool = "session_recap"
+param = "session"
+argv = ["crowsnest", "recap", "--all-homes"]
+min_positional = 1
+max_positional = 1
+arg = "the session's name, as session_roster shows it"
+help = "Five lines about one session: what it was asked, what it did, where it stands."
+
+[[rule]]
+match = ["crowsnest", "turns"]
+tool = "session_turns"
+param = "session"
+argv = ["crowsnest", "turns", "--all-homes"]
+value_flags = [{ names = ["--last", "-l"], pattern = "[0-9]{1,2}" }]
+min_positional = 1
+max_positional = 1
+arg = "the session's name"
+help = "The last few turns of one session, verbatim (last: how many, default a few)."
+
+[[rule]]
+match = ["crowsnest", "ledger"]
+tool = "session_ledger"
+param = "session"
+argv = ["crowsnest", "ledger"]
+max_positional = 1
+arg = "a ledger's name; empty lists every ledger with its age"
+help = "A session's ledger: what it did and decided, written by the session itself."
+
+# --- open loops (openloops) ------------------------------------------------------------
+
+[[rule]]
+match = ["ol", "owed"]
+tool = "owed_by_owner"
+argv = ["ol", "owed", "--no-verify"]
+help = "What the owner still owes their agents: open manual tasks, decisions, approvals."
+
+[[rule]]
+match = ["ol", "blocked"]
+tool = "blocked_work"
+argv = ["ol", "blocked", "--no-verify"]
+help = "Work that is blocked, and on what."
+
+# --- GitHub repositories (gh, read only) -----------------------------------------------
+# Repository names are checked against a pattern that refuses '..' and any repository
+# whose name contains 'secret', so a secrets backup can never be read through here.
+
+[[rule]]
+match = ["gh", "repo", "list"]
+tool = "list_repos"
+param = "owner"
+argv = ["gh", "repo", "list"]
+value_flags = [{ names = ["--limit", "-L"], pattern = "[0-9]{1,3}" }]
+max_positional = 1
+positional_pattern = "[A-Za-z0-9][A-Za-z0-9-]{0,38}"
+arg = "an owner or organisation; empty means the owner's own account"
+help = "Repositories of an owner, most recently updated first, with descriptions."
+
+[[rule]]
+match = ["gh", "repo", "view"]
+tool = "repo_overview"
+param = "repo"
+argv = ["gh", "repo", "view"]
+min_positional = 1
+max_positional = 1
+positional_pattern = "(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}"
+arg = "OWNER/REPO"
+help = "A repository's description and README: the place to start on any repo."
+
+[[rule]]
+match = ["gh", "api", "contents"]
+tool = "read_repo_file"
+param = "path"
+argv = ["gh", "api", "--method", "GET", "-H", "Accept: application/vnd.github.raw+json"]
+min_positional = 1
+max_positional = 1
+positional_pattern = "(?!.*\\.\\.)(?!(?i:.*secret))repos/[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}/contents(/[A-Za-z0-9_.@+=, -]{1,200}){0,12}"
+arg = "repos/OWNER/REPO/contents/PATH (a folder gives its listing as JSON)"
+help = "One file of a repository, or a folder's listing. Long files come in pages."
+
+[[rule]]
+match = ["gh", "issue", "list"]
+tool = "list_issues"
+argv = ["gh", "issue", "list"]
+value_flags = [
+  { names = ["--repo", "-R"], pattern = "(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}" },
+  { names = ["--state", "-s"], pattern = "open|closed|all" },
+  { names = ["--limit", "-L"], pattern = "[0-9]{1,3}" },
+  { names = ["--search", "-S"], pattern = "[A-Za-z0-9 _.:@/#-]{1,120}" },
+]
+help = "Issues of a repository (repo: OWNER/REPO; state: open, closed or all; search: words)."
+
+[[rule]]
+match = ["gh", "issue", "view"]
+tool = "read_issue"
+param = "number"
+argv = ["gh", "issue", "view"]
+flags = ["--comments"]
+value_flags = [
+  { names = ["--repo", "-R"], pattern = "(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}" },
+]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[0-9]{1,7}"
+arg = "the issue number"
+help = "One issue in full (repo: OWNER/REPO; comments: include the discussion)."
+
+# --- the handoff inbox (annals), shared with Claude Code -------------------------------
+
+[[rule]]
+match = ["annals", "ls", "handoffs"]
+tool = "read_handoffs"
+argv = ["annals", "ls", "--tag", "handoff"]
+value_flags = [
+  { names = ["--since"], pattern = "[0-9]{1,4}[hd]|[0-9]{4}-[0-9]{2}-[0-9]{2}" },
+  { names = ["--limit", "-l"], pattern = "[0-9]{1,3}" },
+]
+help = "Handoff notes, newest first (since: 6h, 2d or a date). Read one with read_document."
+
+[[rule]]
+match = ["annals", "aggregate"]
+tool = "read_document"
+param = "document"
+argv = ["annals", "aggregate"]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+arg = "a document's id, as read_handoffs shows it"
+help = "The text of one published document (a handoff note, a report)."
+
+[[rule]]
+match = ["annals", "publish", "handoff"]
+tool = "post_handoff"
+class = "handoff"
+argv = ["annals", "publish", "-", "--tags", "handoff", "--session", "claude-ai"]
+value_flags = [
+  { names = ["--title"], free = true },
+  { names = ["--text"], free = true },
+]
+stdin = "--text"
+help = "Leave a note for Claude Code: title and markdown text (decisions, next steps, links)."

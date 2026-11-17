@@ -66,6 +66,11 @@ class Rule:
     file, named by the single positional argument, from the directory ``root``).
     ``klass`` groups rules for gating: a class listed in the profile's ``[classes]``
     table with ``requires_flag`` is refused until that flag file exists.
+
+    ``tool``, ``param`` and ``arg`` only name things for other transports (the MCP
+    tool's name, its positional parameter's name and that parameter's description); ``stdin`` names a ``free`` value flag
+    whose value is written to the command's standard input instead of its arguments,
+    so a body of text (a note to publish) never lands in ``argv``.
     """
 
     match: tuple[str, ...]
@@ -79,6 +84,10 @@ class Rule:
     positional_pattern: str = DFLT_POSITIONAL_PATTERN
     root: str = ""
     help: str = ""
+    tool: str = ""
+    arg: str = ""
+    param: str = ""
+    stdin: str = ""
 
     @classmethod
     def from_dict(cls, d: Mapping) -> Rule:
@@ -87,13 +96,19 @@ class Rule:
             raise ValueError(f"rule {d.get('match')!r}: unknown kind {kind!r}")
         if kind == "exec" and not d.get("argv"):
             raise ValueError(f"rule {d.get('match')!r}: an exec rule needs argv")
+        value_flags = tuple(ValueFlag.from_dict(v) for v in d.get("value_flags", ()))
+        stdin = d.get("stdin", "")
+        if stdin and not any(stdin in v.names and v.free for v in value_flags):
+            raise ValueError(
+                f"rule {d.get('match')!r}: stdin {stdin!r} must name a free value flag"
+            )
         return cls(
             match=tuple(d["match"]),
             argv=tuple(d.get("argv", ())),
             kind=kind,
             klass=d.get("class", "read"),
             flags=frozenset(d.get("flags", ())),
-            value_flags=tuple(ValueFlag.from_dict(v) for v in d.get("value_flags", ())),
+            value_flags=value_flags,
             max_positional=int(d.get("max_positional", 1 if kind == "file" else 0)),
             min_positional=int(d.get("min_positional", 0)),
             positional_pattern=d.get(
@@ -102,6 +117,10 @@ class Rule:
             ),
             root=d.get("root", ""),
             help=d.get("help", ""),
+            tool=d.get("tool", ""),
+            arg=d.get("arg", ""),
+            param=d.get("param", ""),
+            stdin=stdin,
         )
 
     def value_flag(self, name: str) -> ValueFlag | None:
@@ -116,6 +135,7 @@ class Profile:
     classes: Mapping[str, Mapping] = field(default_factory=dict)
     name: str = ""
     snapshot: tuple[Mapping, ...] = ()
+    instructions: str = ""
 
     @classmethod
     def from_dict(cls, d: Mapping, *, name: str = "") -> Profile:
@@ -124,6 +144,7 @@ class Profile:
             classes=dict(d.get("classes", {})),
             name=d.get("name", name),
             snapshot=tuple(d.get("snapshot", ())),
+            instructions=d.get("instructions", ""),
         )
 
     def rule_for(self, tokens: Sequence[str]) -> Rule | None:
@@ -142,6 +163,7 @@ class Decision:
     rule: Rule | None = None
     argv: tuple[str, ...] = ()
     path: str = ""
+    stdin: str | None = None
 
     @property
     def klass(self) -> str:
@@ -192,7 +214,7 @@ def decide(
         return _refuse(
             request, f"class {rule.klass!r} is switched off (flag {needed!r} absent)", rule
         )
-    extras, positional = [], []
+    extras, positional, stdin = [], [], None
     rest = list(tokens[len(rule.match) :])
     while rest:
         tok = rest.pop(0)
@@ -210,11 +232,21 @@ def decide(
                 value = rest.pop(0)
             else:
                 return _refuse(request, f"flag {name[:40]!r} needs a value", rule)
-            problem = _check_value(value, vf, dispatch_roots)
+            to_stdin = bool(rule.stdin) and rule.stdin in vf.names
+            # A value written to stdin is never read as an option, so it may start with '-'
+            # (a markdown list); it still may not carry a NUL byte.
+            problem = (
+                ("contains a NUL byte" if "\x00" in value else "")
+                if to_stdin
+                else _check_value(value, vf, dispatch_roots)
+            )
             if problem:
                 return _refuse(request, f"{name[:40]}: {problem}", rule)
             if vf.path_under_roots:
                 value = str(Path(value).expanduser().resolve())
+            if to_stdin:
+                stdin = value
+                continue
             extras += [name, value]
             continue
         if any(c in _SHELL_META for c in tok):
@@ -233,7 +265,7 @@ def decide(
         return _decide_file(request, rule, positional, roots or {})
     # Positionals go after `--` so a name can never be read as an option by the tool.
     argv = rule.argv + tuple(extras) + (("--", *positional) if positional else ())
-    return Decision(True, request, "allowed", rule, argv)
+    return Decision(True, request, "allowed", rule, argv, stdin=stdin)
 
 
 def _check_value(value: str, vf: ValueFlag, dispatch_roots: Sequence) -> str:

@@ -39,6 +39,30 @@ Nothing in it kills, reaps, messages or writes into a running session.
 
 To change it for one machine, copy `hatchway/data/profiles/claude-fleet.toml` to `~/.config/hatchway/profiles/<name>.toml`, edit it, and set `profile = "<name>"` in `~/.config/hatchway/config.toml` (or pass `--profile <name>` to `authorize`, which puts it in that key's forced command).
 
+## The second transport: MCP
+
+The same profile can be served as MCP tools, for an agent that speaks MCP but cannot open SSH (a claude.ai custom connector, so also the Claude app's voice mode; Claude Desktop; another machine's MCP client). One tool per rule: its `tool` name, its flags and names as typed parameters, its `help` as the description. Every call is turned back into the request words and goes through the gate, so it is decided, logged and locked exactly as an SSH call is.
+
+```bash
+pip install 'hatchway[mcp]'
+hatchway mcp --profile claude-ai --list                    # the tools, with their signatures
+hatchway mcp --profile claude-ai --http 8799               # serve on 127.0.0.1:8799/mcp
+hatchway mcp --profile claude-ai --ssh me@laptop --identity key   # each call through that machine's gate
+```
+
+```python
+from hatchway.mcp import mk_server, ssh_runner, routed_runner, with_fallback
+
+server = ssh_runner("root@127.0.0.1", identity="key")         # this machine, as another user
+laptop = ssh_runner("me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222"))  # through a tunnel
+runner = routed_runner(server, {"crowsnest": with_fallback(laptop, server)})
+app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff")).http_app()
+```
+
+The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
+
+**The bundled `claude-ai` profile** is shaped for a conversation, typed or spoken: Claude Code sessions (`session_triage`, `session_roster`, `session_recap`, `session_turns`, `session_ledger`), open loops (`owed_by_owner`, `blocked_work`), GitHub read-only (`list_repos`, `repo_overview`, `read_repo_file`, `list_issues`, `read_issue`; a repository whose name contains `secret` is refused), and a handoff inbox shared with Claude Code through [annals](https://github.com/thorwhalen/annals) (`read_handoffs`, `read_document`, and `post_handoff` in the `handoff` class, whose text goes to the command's standard input, never its arguments). A machine adds what only it has in a private profile that starts with `extends = "claude-ai"`.
+
 ## Configuration
 
 `~/.config/hatchway/config.toml`, every key optional:
