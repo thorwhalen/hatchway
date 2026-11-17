@@ -34,15 +34,11 @@ BUNDLED_PROFILES = Path(__file__).parent / "data" / "profiles"
 
 
 def config_dir() -> Path:
-    return Path(
-        os.environ.get("HATCHWAY_CONFIG_DIR", "~/.config/hatchway")
-    ).expanduser()
+    return Path(os.environ.get("HATCHWAY_CONFIG_DIR", "~/.config/hatchway")).expanduser()
 
 
 def data_dir() -> Path:
-    return Path(
-        os.environ.get("HATCHWAY_DATA_DIR", "~/.local/share/hatchway")
-    ).expanduser()
+    return Path(os.environ.get("HATCHWAY_DATA_DIR", "~/.local/share/hatchway")).expanduser()
 
 
 @dataclass
@@ -85,7 +81,9 @@ class Settings:
         d = self.config_dir
         if not d.is_dir():
             return frozenset()
-        return frozenset(p.name for p in d.iterdir() if p.is_file() and p.name.startswith("allow-"))
+        return frozenset(
+            p.name for p in d.iterdir() if p.is_file() and p.name.startswith("allow-")
+        )
 
 
 def load_settings(*, config_file: str | Path | None = None, **overrides) -> Settings:
@@ -102,14 +100,18 @@ def profile_path(name_or_path: str, *, settings: Settings | None = None) -> Path
     if p.suffix == ".toml" and p.is_file():
         return p
     cdir = settings.config_dir if settings else config_dir()
-    for candidate in (cdir / "profiles" / f"{name_or_path}.toml",
-                      BUNDLED_PROFILES / f"{name_or_path}.toml"):
+    for candidate in (
+        cdir / "profiles" / f"{name_or_path}.toml",
+        BUNDLED_PROFILES / f"{name_or_path}.toml",
+    ):
         if candidate.is_file():
             return candidate
     known = sorted(q.stem for q in BUNDLED_PROFILES.glob("*.toml"))
     raise FileNotFoundError(f"no profile {name_or_path!r}; bundled: {', '.join(known)}")
 
 
-def load_profile(name_or_path: str = DFLT_PROFILE, *, settings: Settings | None = None) -> Profile:
+def load_profile(
+    name_or_path: str = DFLT_PROFILE, *, settings: Settings | None = None
+) -> Profile:
     path = profile_path(name_or_path, settings=settings)
     return Profile.from_dict(tomllib.loads(path.read_text()), name=path.stem)

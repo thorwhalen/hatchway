@@ -20,7 +20,19 @@ from hatchway.policy import Decision, Profile, Rule, decide, describe
 from hatchway.snapshot import snapshot
 
 __all__ = [
-    "Decision", "Profile", "Rule", "Settings", "authorize", "decide", "describe", "gate",
-    "install_schedule", "install_skills", "key_line", "load_profile", "load_settings",
-    "revoke", "snapshot",
+    "Decision",
+    "Profile",
+    "Rule",
+    "Settings",
+    "authorize",
+    "decide",
+    "describe",
+    "gate",
+    "install_schedule",
+    "install_skills",
+    "key_line",
+    "load_profile",
+    "load_settings",
+    "revoke",
+    "snapshot",
 ]

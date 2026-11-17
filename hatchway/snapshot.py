@@ -36,8 +36,13 @@ def write_atomic(path: Path, text: str) -> None:
 def _run(argv, settings: Settings) -> tuple[int, str]:
     try:
         p = subprocess.run(  # noqa: PLW1510
-            list(argv), env=command_env(settings), capture_output=True,
-                           text=True, stdin=subprocess.DEVNULL, timeout=settings.timeout)
+            list(argv),
+            env=command_env(settings),
+            capture_output=True,
+            text=True,
+            stdin=subprocess.DEVNULL,
+            timeout=settings.timeout,
+        )
         return p.returncode, p.stdout if p.returncode == 0 else p.stdout + p.stderr
     except FileNotFoundError:
         return 127, f"{argv[0]} is not installed\n"
@@ -55,15 +60,25 @@ def snapshot(
     out = settings.out_dir
     out.mkdir(parents=True, exist_ok=True)
     os.chmod(out, 0o700)
-    index = {"made": datetime.now(UTC).isoformat(timespec="seconds"),
-             "profile": profile.name, "files": {}}
+    index = {
+        "made": datetime.now(UTC).isoformat(timespec="seconds"),
+        "profile": profile.name,
+        "files": {},
+    }
     for entry in profile.snapshot:
         request, name = entry["request"], entry["file"]
-        d = decide(request, profile, flags_present=settings.flags_present(),
-                   roots=settings.all_roots())
+        d = decide(
+            request,
+            profile,
+            flags_present=settings.flags_present(),
+            roots=settings.all_roots(),
+        )
         if not d.allowed or d.rule.kind != "exec" or d.klass != "read":
-            index["files"][name] = {"request": request, "status": None,
-                                    "skipped": d.reason or "not a read command"}
+            index["files"][name] = {
+                "request": request,
+                "status": None,
+                "skipped": d.reason or "not a read command",
+            }
             continue
         status, text = _run(d.argv, settings)
         stamp = datetime.now(UTC).isoformat(timespec="seconds")
@@ -72,7 +87,8 @@ def snapshot(
     # A file the profile no longer lists would be served stale forever: drop it.
     keep = set(index["files"]) | {"index.json"}
     index["pruned"] = sorted(
-        p.name for p in out.iterdir()
+        p.name
+        for p in out.iterdir()
         if p.is_file() and not p.name.startswith(".") and p.name not in keep
     )
     for name in index["pruned"]:
@@ -86,8 +102,19 @@ def snapshot(
 def copy_out(out: Path, to: str) -> str:
     """Copy the snapshot folder to a local directory or ``host:path`` (rsync over ssh)."""
     if ":" in to and not Path(to).expanduser().exists():
-        subprocess.run(["rsync", "-a", "--delete", "-e", "ssh -o BatchMode=yes",
-                        f"{out}/", to.rstrip("/") + "/"], check=True, timeout=120)
+        subprocess.run(
+            [
+                "rsync",
+                "-a",
+                "--delete",
+                "-e",
+                "ssh -o BatchMode=yes",
+                f"{out}/",
+                to.rstrip("/") + "/",
+            ],
+            check=True,
+            timeout=120,
+        )
         return to
     dest = Path(to).expanduser()
     dest.mkdir(parents=True, exist_ok=True)

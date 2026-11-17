@@ -128,9 +128,7 @@ class Profile:
 
     def rule_for(self, tokens: Sequence[str]) -> Rule | None:
         """The rule with the longest ``match`` that prefixes ``tokens``."""
-        candidates = [
-            r for r in self.rules if tuple(tokens[: len(r.match)]) == r.match
-        ]
+        candidates = [r for r in self.rules if tuple(tokens[: len(r.match)]) == r.match]
         return max(candidates, key=lambda r: len(r.match), default=None)
 
 
@@ -195,7 +193,7 @@ def decide(
             request, f"class {rule.klass!r} is switched off (flag {needed!r} absent)", rule
         )
     extras, positional = [], []
-    rest = list(tokens[len(rule.match):])
+    rest = list(tokens[len(rule.match) :])
     while rest:
         tok = rest.pop(0)
         if tok.startswith("-") and tok != "-":
@@ -279,9 +277,7 @@ def describe(profile: Profile) -> list[str]:
     lines = []
     for r in profile.rules:
         words = " ".join(r.match)
-        flags = sorted(r.flags) + [
-            f"{'|'.join(v.names)} VALUE" for v in r.value_flags
-        ]
+        flags = sorted(r.flags) + [f"{'|'.join(v.names)} VALUE" for v in r.value_flags]
         args = ""
         if r.max_positional:
             args = " NAME" if r.max_positional == 1 else f" NAME...(≤{r.max_positional})"

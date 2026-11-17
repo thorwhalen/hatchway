@@ -32,8 +32,18 @@ HELP_WORDS = ("help", "hatchway help")
 BUSY = 75
 # What the commands the gate runs may see of its environment. Nothing the connecting
 # agent could set (sshd's AcceptEnv passes LANG and LC_* on many systems) beyond LANG.
-ENV_KEEP = ("HOME", "USER", "LOGNAME", "SHELL", "TMPDIR", "LANG",
-            "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME", "XDG_RUNTIME_DIR")
+ENV_KEEP = (
+    "HOME",
+    "USER",
+    "LOGNAME",
+    "SHELL",
+    "TMPDIR",
+    "LANG",
+    "XDG_CONFIG_HOME",
+    "XDG_DATA_HOME",
+    "XDG_CACHE_HOME",
+    "XDG_RUNTIME_DIR",
+)
 
 
 def _private_dir(path: Path) -> Path:
@@ -100,8 +110,12 @@ def run_decision(
     try:
         # Its own process group, so a timeout stops the grandchildren (gh, claude) too.
         proc = subprocess.Popen(
-            list(decision.argv), env=command_env(settings), stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            list(decision.argv),
+            env=command_env(settings),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
             start_new_session=True,
         )
     except FileNotFoundError:
@@ -155,12 +169,20 @@ def gate(
         roots=settings.all_roots(),
     )
     if not decision.allowed:
-        sys.stderr.write(f"hatchway: refused: {decision.reason}. Send 'help' for what is allowed.\n")
-        log_call({**record, "decision": "refused", "reason": decision.reason,
-                  "status": REFUSED}, settings=settings)
+        sys.stderr.write(
+            f"hatchway: refused: {decision.reason}. Send 'help' for what is allowed.\n"
+        )
+        log_call(
+            {**record, "decision": "refused", "reason": decision.reason, "status": REFUSED},
+            settings=settings,
+        )
         return REFUSED
-    allowed = {**record, "decision": "allowed", "class": decision.klass,
-               "argv": list(decision.argv) or [decision.path]}
+    allowed = {
+        **record,
+        "decision": "allowed",
+        "class": decision.klass,
+        "argv": list(decision.argv) or [decision.path],
+    }
     lock = _one_at_a_time(agent, settings)
     if lock is None:
         sys.stderr.write("hatchway: busy: one call at a time; retry when the last one ends\n")
@@ -170,8 +192,15 @@ def gate(
         # Logged before it runs: a call whose connection drops still leaves its line.
         log_call({**allowed, "phase": "start"}, settings=settings)
         status = run_decision(decision, settings=settings)
-        log_call({**allowed, "phase": "end", "status": status,
-                  "seconds": round(time.time() - started, 2)}, settings=settings)
+        log_call(
+            {
+                **allowed,
+                "phase": "end",
+                "status": status,
+                "seconds": round(time.time() - started, 2),
+            },
+            settings=settings,
+        )
     finally:
         os.close(lock)
     return status

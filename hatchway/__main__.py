@@ -50,8 +50,12 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("public_key", help="the whole public key line, quoted")
     a.add_argument("--agent", required=True)
     a.add_argument("--profile")
-    a.add_argument("--from", dest="from_", default=None,
-                   help="allowed source addresses (default: Tailscale's ranges)")
+    a.add_argument(
+        "--from",
+        dest="from_",
+        default=None,
+        help="allowed source addresses (default: Tailscale's ranges)",
+    )
     a.add_argument("--anywhere", action="store_true", help="no from= restriction")
     a.add_argument("--authorized-keys", default="~/.ssh/authorized_keys")
     a.add_argument("--replace", action="store_true")
@@ -85,53 +89,93 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "gate":
         from hatchway.gate import gate
+
         return gate(args.request, agent=args.agent, profile=args.profile, settings=settings)
     if args.cmd in ("check", "help"):
         from hatchway.policy import decide, describe
+
         profile = load_profile(args.profile or settings.profile, settings=settings)
         if args.cmd == "help":
             _print("\n".join(describe(profile)))
             return 0
-        d = decide(args.request, profile, flags_present=settings.flags_present(),
-                   dispatch_roots=settings.dispatch_roots, roots=settings.all_roots())
-        _print({"allowed": d.allowed, "reason": d.reason, "class": d.klass,
-                "argv": list(d.argv), "path": d.path})
+        d = decide(
+            args.request,
+            profile,
+            flags_present=settings.flags_present(),
+            dispatch_roots=settings.dispatch_roots,
+            roots=settings.all_roots(),
+        )
+        _print(
+            {
+                "allowed": d.allowed,
+                "reason": d.reason,
+                "class": d.klass,
+                "argv": list(d.argv),
+                "path": d.path,
+            }
+        )
         return 0 if d.allowed else 126
     if args.cmd == "snapshot":
         from hatchway.snapshot import snapshot
+
         _print(snapshot(profile=args.profile, settings=settings))
         return 0
     if args.cmd == "authorize":
         from hatchway.install import TAILNET_FROM, authorize
+
         from_ = None if args.anywhere else (args.from_ or TAILNET_FROM)
-        res = authorize(args.public_key, agent=args.agent, profile=args.profile, from_=from_,
-                        authorized_keys=args.authorized_keys, replace=args.replace,
-                        dry_run=args.dry_run, settings=settings)
+        res = authorize(
+            args.public_key,
+            agent=args.agent,
+            profile=args.profile,
+            from_=from_,
+            authorized_keys=args.authorized_keys,
+            replace=args.replace,
+            dry_run=args.dry_run,
+            settings=settings,
+        )
         _print(res)
         return 1 if res["action"] == "conflict" else 0
     if args.cmd == "revoke":
         from hatchway.install import revoke
-        _print(revoke(args.agent, authorized_keys=args.authorized_keys,
-                      dry_run=args.dry_run, settings=settings))
+
+        _print(
+            revoke(
+                args.agent,
+                authorized_keys=args.authorized_keys,
+                dry_run=args.dry_run,
+                settings=settings,
+            )
+        )
         return 0
     if args.cmd == "schedule":
         from hatchway.install import install_schedule
+
         _print(install_schedule(every=args.every, dry_run=args.dry_run))
         return 0
     if args.cmd == "install-skills":
         from hatchway.install import install_skills
+
         rows = install_skills(homes=args.home, force=args.force, dry_run=args.dry_run)
         _print(rows)
         return 1 if any(r["action"] == "conflict" for r in rows) else 0
     if args.cmd == "setup":
         from hatchway.install import setup
-        res = setup(args.public_key, agent=args.agent, every=args.every or None,
-                    skills=not args.no_skills, settings=settings)
+
+        res = setup(
+            args.public_key,
+            agent=args.agent,
+            every=args.every or None,
+            skills=not args.no_skills,
+            settings=settings,
+        )
         _print(res)
         return 0 if "stopped" not in res and res["authorize"]["action"] != "conflict" else 1
     if args.cmd == "log":
         path = settings.data_dir / "calls.jsonl"
-        lines = [x for x in path.read_text().split("\n") if x][-args.n:] if path.exists() else []
+        lines = (
+            [x for x in path.read_text().split("\n") if x][-args.n :] if path.exists() else []
+        )
         _print("\n".join(lines) or "(no calls yet)")
         return 0
     return 2

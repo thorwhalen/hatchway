@@ -44,7 +44,11 @@ def hatchway_bin() -> str:
 def backup(path: Path, *, settings: Settings) -> Path | None:
     if not path.exists():
         return None
-    dest = settings.data_dir / "backups" / f"{path.name}.{datetime.now().astimezone():%Y%m%d-%H%M%S}"
+    dest = (
+        settings.data_dir
+        / "backups"
+        / f"{path.name}.{datetime.now().astimezone():%Y%m%d-%H%M%S}"
+    )
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(path, dest)
     return dest
@@ -114,8 +118,12 @@ def authorize(
     if same and all(lines[i].strip() == line for i in same):
         return {"action": "ok", "path": str(path), "line": line}
     if same and not replace:
-        return {"action": "conflict", "path": str(path), "line": line,
-                "existing": [lines[i] for i in same]}
+        return {
+            "action": "conflict",
+            "path": str(path),
+            "line": line,
+            "existing": [lines[i] for i in same],
+        }
     action = "replaced" if same else "added"
     kept = [ln for i, ln in enumerate(lines) if i not in same]
     result = {"action": action, "path": str(path), "line": line}
@@ -197,8 +205,10 @@ OnUnitActiveSec={every}
 [Install]
 WantedBy=timers.target
 """
-    return {str(unit_dir / "hatchway-snapshot.service"): service,
-            str(unit_dir / "hatchway-snapshot.timer"): timer}
+    return {
+        str(unit_dir / "hatchway-snapshot.service"): service,
+        str(unit_dir / "hatchway-snapshot.timer"): timer,
+    }
 
 
 def install_schedule(*, every: int = 300, dry_run: bool = False) -> dict:
@@ -213,14 +223,18 @@ def install_schedule(*, every: int = 300, dry_run: bool = False) -> dict:
     if sys.platform == "darwin":
         plist = next(iter(units))
         uid = os.getuid()
-        subprocess.run(["launchctl", "bootout", f"gui/{uid}/{LAUNCHD_LABEL}"],
-                       capture_output=True, check=False)
+        subprocess.run(
+            ["launchctl", "bootout", f"gui/{uid}/{LAUNCHD_LABEL}"],
+            capture_output=True,
+            check=False,
+        )
         subprocess.run(["launchctl", "bootstrap", f"gui/{uid}", plist], check=True)
         loaded = f"launchd gui/{uid}/{LAUNCHD_LABEL}"
     elif shutil.which("systemctl"):
         subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
-        subprocess.run(["systemctl", "--user", "enable", "--now", "hatchway-snapshot.timer"],
-                       check=True)
+        subprocess.run(
+            ["systemctl", "--user", "enable", "--now", "hatchway-snapshot.timer"], check=True
+        )
         loaded = "systemd --user hatchway-snapshot.timer"
     else:
         loaded = f"no launchd or systemd: add to cron: */{max(every // 60, 1)} * * * * {hatchway_bin()} snapshot"
@@ -228,6 +242,7 @@ def install_schedule(*, every: int = 300, dry_run: bool = False) -> dict:
 
 
 # --- skills -------------------------------------------------------------------------
+
 
 def install_skills(
     *, homes: list[str | Path] | None = None, force: bool = False, dry_run: bool = False
@@ -238,7 +253,9 @@ def install_skills(
     rows = []
     for home in homes:
         home = Path(home).expanduser()
-        assets = [(p, home / "skills" / p.name) for p in sorted(SKILLS_DIR.iterdir()) if p.is_dir()]
+        assets = [
+            (p, home / "skills" / p.name) for p in sorted(SKILLS_DIR.iterdir()) if p.is_dir()
+        ]
         if AGENTS_DIR.is_dir():
             assets += [(p, home / "agents" / p.name) for p in sorted(AGENTS_DIR.glob("*.md"))]
         for src, dest in assets:
@@ -247,7 +264,9 @@ def install_skills(
             action = "ok" if here else ("conflict" if exists and not force else "install")
             if action == "install" and not dry_run:
                 if exists:
-                    dest.unlink() if dest.is_symlink() or dest.is_file() else shutil.rmtree(dest)
+                    dest.unlink() if dest.is_symlink() or dest.is_file() else shutil.rmtree(
+                        dest
+                    )
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 os.symlink(src, dest, target_is_directory=src.is_dir())
             rows.append({"home": str(home), "name": src.name, "action": action})
@@ -264,7 +283,9 @@ DFLT_TOOLS = ("crowsnest", "ol", "claude", "gh")
 
 
 def write_config(
-    *, tools: tuple[str, ...] = DFLT_TOOLS, profile: str = "claude-fleet",
+    *,
+    tools: tuple[str, ...] = DFLT_TOOLS,
+    profile: str = "claude-fleet",
     settings: Settings | None = None,
 ) -> dict:
     """Write ``config.toml`` with ``path`` set to where ``tools`` live, unless one exists."""
@@ -272,15 +293,15 @@ def write_config(
     path = settings.config_dir / "config.toml"
     if path.exists():
         return {"action": "ok", "path": str(path)}
-    dirs = list(dict.fromkeys(
-        str(Path(w).parent) for t in tools if (w := shutil.which(t))
-    ))
+    dirs = list(dict.fromkeys(str(Path(w).parent) for t in tools if (w := shutil.which(t))))
     missing = [t for t in tools if not shutil.which(t)]
     path.parent.mkdir(parents=True, exist_ok=True)
-    body = (f'profile = "{profile}"\n'
-            f"# sshd hands a forced command a minimal PATH: where {', '.join(tools)} live\n"
-            f"path = [{', '.join(repr(d).replace(chr(39), chr(34)) for d in dirs)}]\n"
-            f"timeout = 120\n")
+    body = (
+        f'profile = "{profile}"\n'
+        f"# sshd hands a forced command a minimal PATH: where {', '.join(tools)} live\n"
+        f"path = [{', '.join(repr(d).replace(chr(39), chr(34)) for d in dirs)}]\n"
+        f"timeout = 120\n"
+    )
     path.write_text(body)
     return {"action": "written", "path": str(path), "path_dirs": dirs, "missing": missing}
 
@@ -291,19 +312,32 @@ def self_test(*, settings: Settings | None = None) -> dict:
     binary = hatchway_bin()
     env = {"HOME": str(Path.home()), "PATH": "/usr/bin:/bin"}
     if settings is not None:
-        env |= {"HATCHWAY_CONFIG_DIR": str(settings.config_dir),
-                "HATCHWAY_DATA_DIR": str(settings.data_dir)}
+        env |= {
+            "HATCHWAY_CONFIG_DIR": str(settings.config_dir),
+            "HATCHWAY_DATA_DIR": str(settings.data_dir),
+        }
 
     def run(request):
-        p = subprocess.run([binary, "gate", "--agent", "selftest"], capture_output=True,
-                           text=True, env={**env, "SSH_ORIGINAL_COMMAND": request},
-                           timeout=180, check=False)
-        return {"request": request, "status": p.returncode,
-                "first_line": (p.stdout or p.stderr).strip().splitlines()[:1]}
+        p = subprocess.run(
+            [binary, "gate", "--agent", "selftest"],
+            capture_output=True,
+            text=True,
+            env={**env, "SSH_ORIGINAL_COMMAND": request},
+            timeout=180,
+            check=False,
+        )
+        return {
+            "request": request,
+            "status": p.returncode,
+            "first_line": (p.stdout or p.stderr).strip().splitlines()[:1],
+        }
 
     allowed, forbidden = run("help"), run("cat ~/.ssh/authorized_keys")
-    return {"ok": allowed["status"] == 0 and forbidden["status"] == 126,
-            "allowed": allowed, "forbidden": forbidden}
+    return {
+        "ok": allowed["status"] == 0 and forbidden["status"] == 126,
+        "allowed": allowed,
+        "forbidden": forbidden,
+    }
 
 
 def setup(
@@ -332,8 +366,10 @@ def setup(
         try:
             report["schedule"] = install_schedule(every=every)
         except (OSError, subprocess.CalledProcessError) as e:
-            report["schedule"] = {"error": str(e),
-                                  "cron": f"*/{max(every // 60, 1)} * * * * {hatchway_bin()} snapshot"}
+            report["schedule"] = {
+                "error": str(e),
+                "cron": f"*/{max(every // 60, 1)} * * * * {hatchway_bin()} snapshot",
+            }
     if skills:
         report["skills"] = install_skills(homes=claude_homes())
     return report

@@ -18,14 +18,25 @@ def settings(tmp_path):
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     tool = bin_dir / "fake"
-    tool.write_text("#!/bin/sh\necho \"ran:$*\"\n")
+    tool.write_text('#!/bin/sh\necho "ran:$*"\n')
     tool.chmod(tool.stat().st_mode | stat.S_IEXEC)
-    return Settings(path=[str(bin_dir)], config_dir=tmp_path / "cfg",
-                    data_dir=tmp_path / "data")
+    return Settings(
+        path=[str(bin_dir)], config_dir=tmp_path / "cfg", data_dir=tmp_path / "data"
+    )
 
 
-PROFILE = Profile.from_dict({"rule": [
-    {"match": ["fake"], "argv": ["fake", "fixed"], "flags": ["-q"], "max_positional": 1}]})
+PROFILE = Profile.from_dict(
+    {
+        "rule": [
+            {
+                "match": ["fake"],
+                "argv": ["fake", "fixed"],
+                "flags": ["-q"],
+                "max_positional": 1,
+            }
+        ]
+    }
+)
 
 
 def test_allowed_runs_without_shell(settings, capfd):
@@ -38,7 +49,9 @@ def test_refused_and_logged(settings, capfd, monkeypatch):
     monkeypatch.setenv("SSH_ORIGINAL_COMMAND", "fake; id")
     assert gate(profile=PROFILE, settings=settings, agent="muse") == 126
     assert "refused" in capfd.readouterr().err
-    calls = [json.loads(x) for x in (settings.data_dir / "calls.jsonl").read_text().splitlines()]
+    calls = [
+        json.loads(x) for x in (settings.data_dir / "calls.jsonl").read_text().splitlines()
+    ]
     assert calls[-1]["agent"] == "muse" and calls[-1]["decision"] == "refused"
 
 
@@ -46,7 +59,7 @@ def test_key_line_rejects_option_injection():
     with pytest.raises(ValueError):
         key_line('ssh-ed25519 AAAA x\ncommand="sh"', agent="muse", binary="/b/hatchway")
     with pytest.raises(ValueError):
-        key_line("command=\"sh\" " + KEY, agent="muse", binary="/b/hatchway")
+        key_line('command="sh" ' + KEY, agent="muse", binary="/b/hatchway")
     with pytest.raises(ValueError):
         key_line(KEY, agent="Muse; rm", binary="/b/hatchway")
 
@@ -55,13 +68,22 @@ def test_authorize_idempotent_and_keeps_lines(tmp_path, settings, monkeypatch):
     monkeypatch.setattr("hatchway.install.hatchway_bin", lambda: "/b/hatchway")
     ak = tmp_path / "authorized_keys"
     ak.write_text("ssh-ed25519 AAAAexisting me@laptop\n")
-    assert authorize(KEY, agent="muse", authorized_keys=ak, settings=settings)["action"] == "added"
-    assert authorize(KEY, agent="muse", authorized_keys=ak, settings=settings)["action"] == "ok"
+    assert (
+        authorize(KEY, agent="muse", authorized_keys=ak, settings=settings)["action"]
+        == "added"
+    )
+    assert (
+        authorize(KEY, agent="muse", authorized_keys=ak, settings=settings)["action"] == "ok"
+    )
     text = ak.read_text()
-    assert "AAAAexisting" in text and text.count("gMEBQYHCAkK") == 1 and 'restrict' in text
+    assert "AAAAexisting" in text and text.count("gMEBQYHCAkK") == 1 and "restrict" in text
     assert oct(os.stat(ak).st_mode)[-3:] == "600"
-    assert authorize(KEY, agent="muse", profile="x", authorized_keys=ak,
-                     settings=settings)["action"] == "conflict"
+    assert (
+        authorize(KEY, agent="muse", profile="x", authorized_keys=ak, settings=settings)[
+            "action"
+        ]
+        == "conflict"
+    )
     assert revoke("muse", authorized_keys=ak, settings=settings)["removed"] == 1
     assert ak.read_text() == "ssh-ed25519 AAAAexisting me@laptop\n"
     assert list((settings.data_dir / "backups").iterdir())
@@ -69,6 +91,7 @@ def test_authorize_idempotent_and_keeps_lines(tmp_path, settings, monkeypatch):
 
 def test_write_config_and_self_test(tmp_path):
     from hatchway.install import self_test, write_config
+
     s = Settings(config_dir=tmp_path / "cfg", data_dir=tmp_path / "data")
     res = write_config(tools=("sh",), settings=s)
     assert res["action"] == "written" and res["path_dirs"]
@@ -85,6 +108,7 @@ def test_log_cannot_be_forged(settings):
 
 def test_one_call_at_a_time(settings):
     from hatchway.gate import _one_at_a_time
+
     held = _one_at_a_time("muse", settings)
     try:
         assert gate("fake -q", profile=PROFILE, settings=settings, agent="muse") == 75
@@ -95,6 +119,7 @@ def test_one_call_at_a_time(settings):
 
 def test_child_env_is_an_allowlist(settings, monkeypatch):
     from hatchway.gate import command_env
+
     monkeypatch.setenv("LC_EVIL", "x")
     monkeypatch.setenv("LD_PRELOAD", "/tmp/x.so")
     env = command_env(settings)
