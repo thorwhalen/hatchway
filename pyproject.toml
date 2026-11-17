@@ -57,4 +57,6 @@ project_name = "hatchway"
 extras = "dev"
 
 [tool.wads.ci.testing]
+# POSIX only: an sshd forced command, fcntl locks, launchd/systemd timers
 python_versions = ["3.11", "3.12"]
+test_on_windows = false
