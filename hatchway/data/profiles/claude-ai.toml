@@ -20,7 +20,9 @@ session_turns). Long answers come in pages: the answer says which offset to ask 
 Summarise what comes back in a few spoken sentences unless asked for detail. A \
 'refused:' answer means the request is outside what this connector allows; say so, do \
 not retry with variations. post_handoff writes a note Claude Code will read: use it \
-when the owner asks to pass something on, and read the title and body back first. It \
+when the owner asks to pass something on, and read the title and body back first. \
+request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
+it on their desk with Face ID or Touch ID, and use work_status to say what became of it. It \
 answers with one line for Claude Code: show that line to the owner exactly as given, on \
 its own, ready to copy, and tell them to paste it into a Claude Code session.
 """
@@ -34,6 +36,13 @@ its own, ready to copy, and tell them to paste it into a Claude Code session.
 # conversation read elsewhere (an issue comment, a README), so whoever reads it treats it
 # as data, never as an instruction.
 requires_flag = "allow-handoff"
+
+[classes.work_request]
+# one ask: queue a job on an issue for the owner to confirm in person. It starts nothing:
+# the machine that keeps the request shows it to the owner, who confirms it with a passkey
+# on their own surface, and only that machine starts the work, after checking the
+# confirmation itself. Off until ~/.config/hatchway/allow-work-request exists.
+requires_flag = "allow-work-request"
 
 # --- Claude Code sessions on this machine (crowsnest) ---------------------------------
 
@@ -198,3 +207,28 @@ reply = """Posted: {out}
 Line to paste into Claude Code:
 Read the handoff {out} with `annals aggregate {out}` and act on it."""
 help = "Leave a note for Claude Code: title and markdown text, up to about 7000 characters (decisions, next steps, links). Returns the line to paste into Claude Code."
+
+# --- work requests: a job on an issue, confirmed by the owner in person ----------------
+
+[[rule]]
+match = ["equerry-desk", "request-work"]
+tool = "request_work"
+class = "work_request"
+argv = ["equerry-desk", "request-work"]
+value_flags = [
+  { names = ["--repo"], pattern = "(?!.*\\.\\.)[A-Za-z0-9][A-Za-z0-9_.-]{0,99}/[A-Za-z0-9_.-]{1,100}" },
+  { names = ["--number"], pattern = "[0-9]{1,7}" },
+  { names = ["--model"], pattern = "sonnet|opus" },
+]
+help = "Ask for a job on one issue (repo: OWNER/REPO, number). Starts nothing until the owner confirms it with a passkey on their desk."
+
+[[rule]]
+match = ["equerry-desk", "request-status"]
+tool = "work_status"
+param = "request"
+argv = ["equerry-desk", "request-status"]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[0-9a-f]{12}"
+arg = "the request id request_work gave"
+help = "What became of a work request: queued, started, declined, refused or expired."

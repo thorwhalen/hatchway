@@ -309,3 +309,20 @@ def test_bundled_post_handoff_returns_a_paste_line():
     p = load_profile("claude-ai")
     (rule,) = [r for r in p.rules if r.tool == "post_handoff"]
     assert "annals aggregate {out}" in rule.reply
+
+
+def test_bundled_work_request_is_gated_and_narrow():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    ask = "equerry-desk request-work --repo o/r --number 7"
+    assert not decide(ask, p, flags_present=set()).allowed  # off until its flag exists
+    on = {"allow-work-request"}
+    assert decide(ask, p, flags_present=on).argv[-2:] == ("--number", "7")
+    assert not decide(ask + " --model fable", p, flags_present=on).allowed
+    assert not decide(
+        "equerry-desk request-work --repo ../x --number 1", p, flags_present=on
+    ).allowed
+    assert decide("equerry-desk request-status 0123456789ab", p, flags_present=set()).allowed
+    assert not decide("equerry-desk request-status ../../x", p, flags_present=set()).allowed
