@@ -279,3 +279,33 @@ def test_fan_out_deadline_cache_and_refusal():
         "[tw] (busy: another call is running)"
         in fan_out({"tw": busy, "a": fast}, ttl=0)("x").out
     )
+
+
+def test_reply_template_shapes_a_successful_answer():
+    import pytest
+
+    from hatchway.policy import Profile, Rule
+
+    rule = {
+        "match": ["annals", "publish"],
+        "argv": ["annals", "publish", "-"],
+        "class": "handoff",
+        "value_flags": [{"names": ["--text"], "free": True}],
+        "stdin": "--text",
+        "reply": "Paste: read {out}",
+    }
+    p = Profile.from_dict({"rule": [rule]})
+    ok = mk_tools(p, runner=lambda r: Result(0, "https://x/d/1\n", ""), classes=("handoff",))
+    assert ok[0](text="hi") == "Paste: read https://x/d/1"
+    failed = mk_tools(p, runner=lambda r: Result(1, "", "boom"), classes=("handoff",))
+    assert failed[0](text="hi").startswith("failed (exit 1)")
+    with pytest.raises(ValueError, match="only use"):
+        Rule.from_dict({**rule, "reply": "{out} {secret}"})
+
+
+def test_bundled_post_handoff_returns_a_paste_line():
+    from hatchway.config import load_profile
+
+    p = load_profile("claude-ai")
+    (rule,) = [r for r in p.rules if r.tool == "post_handoff"]
+    assert "annals aggregate {out}" in rule.reply

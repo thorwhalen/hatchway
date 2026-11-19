@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import re
 import shlex
+import string
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -70,7 +71,9 @@ class Rule:
     ``tool``, ``param`` and ``arg`` only name things for other transports (the MCP
     tool's name, its positional parameter's name and that parameter's description); ``stdin`` names a ``free`` value flag
     whose value is written to the command's standard input instead of its arguments,
-    so a body of text (a note to publish) never lands in ``argv``.
+    so a body of text (a note to publish) never lands in ``argv``. ``reply`` shapes a
+    successful answer for those transports: a template whose only field is ``{out}``, the
+    command's output stripped (a published link turned into a line to paste elsewhere).
     """
 
     match: tuple[str, ...]
@@ -88,6 +91,7 @@ class Rule:
     arg: str = ""
     param: str = ""
     stdin: str = ""
+    reply: str = ""
 
     @classmethod
     def from_dict(cls, d: Mapping) -> Rule:
@@ -101,6 +105,12 @@ class Rule:
         if stdin and not any(stdin in v.names and v.free for v in value_flags):
             raise ValueError(
                 f"rule {d.get('match')!r}: stdin {stdin!r} must name a free value flag"
+            )
+        reply = d.get("reply", "")
+        fields = {f for _, f, _, _ in string.Formatter().parse(reply) if f is not None}
+        if fields - {"out"}:
+            raise ValueError(
+                f"rule {d.get('match')!r}: reply may only use {{out}}, not {sorted(fields - {'out'})}"
             )
         return cls(
             match=tuple(d["match"]),
@@ -121,6 +131,7 @@ class Rule:
             arg=d.get("arg", ""),
             param=d.get("param", ""),
             stdin=stdin,
+            reply=reply,
         )
 
     def value_flag(self, name: str) -> ValueFlag | None:
