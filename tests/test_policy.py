@@ -188,3 +188,30 @@ def test_stdin_abuse():
                 ]
             }
         )
+
+
+def test_message_session_use_and_abuse():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    on = {"allow-session-message"}
+    d = decide("crowsnest intent put alpha-1 --text 'stop now'", p, flags_present=on)
+    assert d.allowed and d.argv[:4] == ("crowsnest", "intent", "put", "tell")
+    assert d.stdin == "stop now" and d.argv[-2:] == ("--", "alpha-1")
+    # off without its flag; no other intent kinds; no store override; no odd session names
+    assert not decide("crowsnest intent put alpha --text hi", p, flags_present=set()).allowed
+    assert not decide("crowsnest intent put start alpha --text hi", p, flags_present=on).allowed
+    assert not decide("crowsnest intent put alpha --store /x --text hi", p, flags_present=on).allowed
+    assert not decide("crowsnest intent put ../x --text hi", p, flags_present=on).allowed
+    assert not decide("crowsnest intent put alpha", p, flags_present=on).allowed
+
+
+def test_read_issue_asks_for_json_not_the_deprecated_projects_field():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    d = decide("gh issue view 7 --repo a/b", p, flags_present=set())
+    assert d.allowed and "--json" in d.argv and "--comments" not in d.argv
+    assert not decide("gh issue view 7 --repo a/b --comments", p, flags_present=set()).allowed

@@ -37,7 +37,7 @@ def test_every_rule_is_a_uniquely_named_tool(claude_ai):
     tools = mk_tools(
         claude_ai,
         runner=lambda r: Result(0, "", ""),
-        classes=("read", "handoff", "work_request", "issue_write"),
+        classes=("read", "handoff", "work_request", "issue_write", "session_message"),
     )
     assert [t.__name__ for t in tools] == [tool_name(r) for r in claude_ai.rules]
     assert "post_handoff" not in {t.__name__ for t in mk_tools(claude_ai, runner=None)}
@@ -145,7 +145,7 @@ def test_served_over_mcp(claude_ai):
         async with fastmcp.Client(server) as c:
             tools = {t.name: t for t in await c.list_tools()}
             res = await c.call_tool(
-                "read_issue", {"number": "7", "repo": "a/b", "comments": True}
+                "read_issue", {"number": "7", "repo": "a/b"}
             )
             return tools, res
 
@@ -158,7 +158,6 @@ def test_served_over_mcp(claude_ai):
         "gh",
         "issue",
         "view",
-        "--comments",
         "--repo",
         "a/b",
         "7",
