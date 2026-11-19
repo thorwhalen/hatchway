@@ -1,4 +1,4 @@
-> built 2026-11-19 08:30 UTC from bbb8d42 (main) · hatchway 0.0.4. Details: build_info.json
+> built 2026-11-19 08:41 UTC from 501d884 (main) · hatchway 0.0.5. Details: build_info.json
 
 # index.html.md
 
@@ -57,17 +57,19 @@ hatchway mcp --profile claude-ai --ssh me@laptop --identity key   # each call th
 ```
 
 ```python
-from hatchway.mcp import mk_server, ssh_runner, routed_runner, with_fallback
+from hatchway.mcp import fan_out, mk_server, routed_runner, ssh_runner, with_fallback
 
 server = ssh_runner("root@127.0.0.1", identity="key")  # this machine, as another user
 laptop = ssh_runner(
     "me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222")
 )  # through a tunnel
 runner = routed_runner(server, {"crowsnest": with_fallback(laptop, server)})
+# or ask every machine at once and merge, each row tagged [laptop] / [server]:
+runner = routed_runner(server, {"crowsnest": fan_out({"laptop": laptop, "server": server})})
 app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff")).http_app()
 ```
 
-The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
+The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. `routed_runner` sends a request to a runner by its first word; `with_fallback` asks a second machine only when the first cannot be reached; `fan_out` asks several machines in parallel and merges their answers, each line tagged with its machine, and names on its own line any machine that did not answer, so a partial list never reads as a whole one. Use it for reads only: a request that changes something goes to one runner. A rule’s `reply` (a template over `{out}`, the command’s output) shapes a successful answer for these transports, as `post_handoff` does to return a line to paste into Claude Code. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
 
 **The bundled `claude-ai` profile** is shaped for a conversation, typed or spoken: Claude Code sessions (`session_triage`, `session_roster`, `session_recap`, `session_turns`, `session_ledger`), open loops (`owed_by_owner`, `blocked_work`), GitHub read-only (`list_repos`, `repo_overview`, `read_repo_file`, `list_issues`, `read_issue`; a repository whose name contains `secret` is refused), and a handoff inbox shared with Claude Code through [annals](https://github.com/thorwhalen/annals) (`read_handoffs`, `read_document`, and `post_handoff` in the `handoff` class, whose text goes to the command’s standard input, never its arguments). A machine adds what only it has in a private profile that starts with `extends = "claude-ai"`.
 
@@ -229,7 +231,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](_autosummary/hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='')
+### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -243,7 +245,9 @@ table with `requires_flag` is refused until that flag file exists.
 `tool`, `param` and `arg` only name things for other transports (the MCP
 tool’s name, its positional parameter’s name and that parameter’s description); `stdin` names a `free` value flag
 whose value is written to the command’s standard input instead of its arguments,
-so a body of text (a note to publish) never lands in `argv`.
+so a body of text (a note to publish) never lands in `argv`. `reply` shapes a
+successful answer for those transports: a template whose only field is `{out}`, the
+command’s output stripped (a published link turned into a line to paste elsewhere).
 
 ### *class* hatchway.Settings(profile='claude-fleet', path=list(), timeout=120, roots=dict(), dispatch_roots=list(), snapshot_to='', config_dir=config_dir(), data_dir=data_dir())
 
@@ -755,7 +759,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](_autosummary/hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='')
+### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -769,7 +773,9 @@ table with `requires_flag` is refused until that flag file exists.
 `tool`, `param` and `arg` only name things for other transports (the MCP
 tool’s name, its positional parameter’s name and that parameter’s description); `stdin` names a `free` value flag
 whose value is written to the command’s standard input instead of its arguments,
-so a body of text (a note to publish) never lands in `argv`.
+so a body of text (a note to publish) never lands in `argv`. `reply` shapes a
+successful answer for those transports: a template whose only field is `{out}`, the
+command’s output stripped (a published link turned into a line to paste elsewhere).
 
 ### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False)
 
@@ -810,18 +816,16 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-19 08:30 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa"><code>bbb8d42</code></a> on branch <code>main</code>, for **hatchway 0.0.4** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-19 08:41 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/501d8843dfb7e437c6d0edfc21d2419a6835e88c"><code>501d884</code></a> on branch <code>main</code>, for **hatchway 0.0.5** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.4) is behind the latest release on PyPI (0.0.5): `pip install hatchway` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa"><code>bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/501d8843dfb7e437c6d0edfc21d2419a6835e88c"><code>501d8843dfb7e437c6d0edfc21d2419a6835e88c</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -832,9 +836,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44487949404">44487949404</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44489541390">44489541390</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa</code> (in the history of the built commit) |
+| Event commit | <code>501d8843dfb7e437c6d0edfc21d2419a6835e88c</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -859,13 +863,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.5/">0.0.5</a>, newer than the documented version (0.0.4).
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.5/">0.0.5</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa
+git checkout 501d8843dfb7e437c6d0edfc21d2419a6835e88c
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

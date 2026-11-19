@@ -2,18 +2,16 @@
 
 # About this build
 
-This documentation was built on **2026-11-19 08:30 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa"><code>bbb8d42</code></a> on branch <code>main</code>, for **hatchway 0.0.4** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-19 08:41 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/501d8843dfb7e437c6d0edfc21d2419a6835e88c"><code>501d884</code></a> on branch <code>main</code>, for **hatchway 0.0.5** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.4) is behind the latest release on PyPI (0.0.5): `pip install hatchway` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa"><code>bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/501d8843dfb7e437c6d0edfc21d2419a6835e88c"><code>501d8843dfb7e437c6d0edfc21d2419a6835e88c</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -24,9 +22,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44487949404">44487949404</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44489541390">44489541390</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa</code> (in the history of the built commit) |
+| Event commit | <code>501d8843dfb7e437c6d0edfc21d2419a6835e88c</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -51,13 +49,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.5/">0.0.5</a>, newer than the documented version (0.0.4).
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.5/">0.0.5</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa
+git checkout 501d8843dfb7e437c6d0edfc21d2419a6835e88c
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

@@ -58,7 +58,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='')
+### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -72,7 +72,9 @@ table with `requires_flag` is refused until that flag file exists.
 `tool`, `param` and `arg` only name things for other transports (the MCP
 tool’s name, its positional parameter’s name and that parameter’s description); `stdin` names a `free` value flag
 whose value is written to the command’s standard input instead of its arguments,
-so a body of text (a note to publish) never lands in `argv`.
+so a body of text (a note to publish) never lands in `argv`. `reply` shapes a
+successful answer for those transports: a template whose only field is `{out}`, the
+command’s output stripped (a published link turned into a line to paste elsewhere).
 
 ### *class* hatchway.Settings(profile='claude-fleet', path=list(), timeout=120, roots=dict(), dispatch_roots=list(), snapshot_to='', config_dir=config_dir(), data_dir=data_dir())
 

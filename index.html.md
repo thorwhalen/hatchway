@@ -53,17 +53,19 @@ hatchway mcp --profile claude-ai --ssh me@laptop --identity key   # each call th
 ```
 
 ```python
-from hatchway.mcp import mk_server, ssh_runner, routed_runner, with_fallback
+from hatchway.mcp import fan_out, mk_server, routed_runner, ssh_runner, with_fallback
 
 server = ssh_runner("root@127.0.0.1", identity="key")  # this machine, as another user
 laptop = ssh_runner(
     "me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222")
 )  # through a tunnel
 runner = routed_runner(server, {"crowsnest": with_fallback(laptop, server)})
+# or ask every machine at once and merge, each row tagged [laptop] / [server]:
+runner = routed_runner(server, {"crowsnest": fan_out({"laptop": laptop, "server": server})})
 app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff")).http_app()
 ```
 
-The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
+The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. `routed_runner` sends a request to a runner by its first word; `with_fallback` asks a second machine only when the first cannot be reached; `fan_out` asks several machines in parallel and merges their answers, each line tagged with its machine, and names on its own line any machine that did not answer, so a partial list never reads as a whole one. Use it for reads only: a request that changes something goes to one runner. A rule’s `reply` (a template over `{out}`, the command’s output) shapes a successful answer for these transports, as `post_handoff` does to return a line to paste into Claude Code. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
 
 **The bundled `claude-ai` profile** is shaped for a conversation, typed or spoken: Claude Code sessions (`session_triage`, `session_roster`, `session_recap`, `session_turns`, `session_ledger`), open loops (`owed_by_owner`, `blocked_work`), GitHub read-only (`list_repos`, `repo_overview`, `read_repo_file`, `list_issues`, `read_issue`; a repository whose name contains `secret` is refused), and a handoff inbox shared with Claude Code through [annals](https://github.com/thorwhalen/annals) (`read_handoffs`, `read_document`, and `post_handoff` in the `handoff` class, whose text goes to the command’s standard input, never its arguments). A machine adds what only it has in a private profile that starts with `extends = "claude-ai"`.
 

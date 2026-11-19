@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=8c5712d9"></script>
+    <script src="../../_static/documentation_options.js?v=282f96c0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.4" />
+  <meta name="docsearch:version" content="0.0.5" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -736,6 +736,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -789,7 +790,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ``tool``, ``param`` and ``arg`` only name things for other transports (the MCP</span>
 <span class="sd">    tool's name, its positional parameter's name and that parameter's description); ``stdin`` names a ``free`` value flag</span>
 <span class="sd">    whose value is written to the command's standard input instead of its arguments,</span>
-<span class="sd">    so a body of text (a note to publish) never lands in ``argv``.</span>
+<span class="sd">    so a body of text (a note to publish) never lands in ``argv``. ``reply`` shapes a</span>
+<span class="sd">    successful answer for those transports: a template whose only field is ``{out}``, the</span>
+<span class="sd">    command's output stripped (a published link turned into a line to paste elsewhere).</span>
 <span class="sd">    """</span>
 
     <span class="n">match</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
@@ -807,6 +810,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">arg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">param</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">stdin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">reply</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rule</span><span class="p">:</span>
@@ -820,6 +824,12 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">stdin</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">stdin</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">names</span> <span class="ow">and</span> <span class="n">v</span><span class="o">.</span><span class="n">free</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value_flags</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"rule </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'match'</span><span class="p">)</span><span class="si">!r}</span><span class="s2">: stdin </span><span class="si">{</span><span class="n">stdin</span><span class="si">!r}</span><span class="s2"> must name a free value flag"</span>
+            <span class="p">)</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reply"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">Formatter</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">fields</span> <span class="o">-</span> <span class="p">{</span><span class="s2">"out"</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"rule </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'match'</span><span class="p">)</span><span class="si">!r}</span><span class="s2">: reply may only use </span><span class="se">{{</span><span class="s2">out</span><span class="se">}}</span><span class="s2">, not </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">fields</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">{</span><span class="s1">'out'</span><span class="p">})</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="n">match</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"match"</span><span class="p">]),</span>
@@ -840,6 +850,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">arg</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"arg"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
             <span class="n">param</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"param"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
             <span class="n">stdin</span><span class="o">=</span><span class="n">stdin</span><span class="p">,</span>
+            <span class="n">reply</span><span class="o">=</span><span class="n">reply</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">value_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValueFlag</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
