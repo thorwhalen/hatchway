@@ -37,7 +37,7 @@ def test_every_rule_is_a_uniquely_named_tool(claude_ai):
     tools = mk_tools(
         claude_ai,
         runner=lambda r: Result(0, "", ""),
-        classes=("read", "handoff", "work_request"),
+        classes=("read", "handoff", "work_request", "issue_write"),
     )
     assert [t.__name__ for t in tools] == [tool_name(r) for r in claude_ai.rules]
     assert "post_handoff" not in {t.__name__ for t in mk_tools(claude_ai, runner=None)}
@@ -345,3 +345,25 @@ def test_intent_status_is_read_only_and_routed_alone():
         {"crowsnest": every, "crowsnest intent": lambda r: Result(0, "one", "")},
     )
     assert run(ok).out == "one" and run("crowsnest roster").out == "[a] a\n[b] b\n"
+
+
+def test_issue_writes_are_gated_and_read_their_text_from_stdin():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    on = {"allow-issue-write"}
+    req = "correspond send issue --title 'A bug' --text 'Body - with dash' github:o/r"
+    assert not decide(req, p, flags_present=set()).allowed
+    d = decide(req, p, flags_present=on)
+    assert d.argv == ("correspond", "send", "--title", "A bug", "--", "github:o/r", "-")
+    assert d.stdin == "Body - with dash"
+    c = decide("correspond send comment --text hi github:o/r#12", p, flags_present=on)
+    assert c.argv[-3:] == ("--", "github:o/r#12", "-")
+    for bad in ("github:o/r#12 x", "github:../r", "github:o/my-secrets", "o/r"):
+        assert not decide(
+            f"correspond send issue --title t --text b {bad}", p, flags_present=on
+        ).allowed
+    assert not decide(
+        "correspond send issue --title t github:o/r", p, flags_present=on
+    ).allowed

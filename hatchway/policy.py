@@ -74,6 +74,8 @@ class Rule:
     so a body of text (a note to publish) never lands in ``argv``. ``reply`` shapes a
     successful answer for those transports: a template whose only field is ``{out}``, the
     command's output stripped (a published link turned into a line to paste elsewhere).
+    ``tail`` is fixed words placed after the request's arguments (``-``, for a command
+    that reads its text from standard input only in that position).
     """
 
     match: tuple[str, ...]
@@ -92,6 +94,7 @@ class Rule:
     param: str = ""
     stdin: str = ""
     reply: str = ""
+    tail: tuple[str, ...] = ()
 
     @classmethod
     def from_dict(cls, d: Mapping) -> Rule:
@@ -132,6 +135,7 @@ class Rule:
             param=d.get("param", ""),
             stdin=stdin,
             reply=reply,
+            tail=tuple(d.get("tail", ())),
         )
 
     def value_flag(self, name: str) -> ValueFlag | None:
@@ -277,7 +281,7 @@ def decide(
     if rule.kind == "file":
         return _decide_file(request, rule, positional, roots or {})
     # Positionals go after `--` so a name can never be read as an option by the tool.
-    argv = rule.argv + tuple(extras) + (("--", *positional) if positional else ())
+    argv = rule.argv + tuple(extras) + (("--", *positional) if positional else ()) + rule.tail
     return Decision(True, request, "allowed", rule, argv, stdin=stdin)
 
 
