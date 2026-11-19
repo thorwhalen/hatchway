@@ -21,7 +21,9 @@ Summarise what comes back in a few spoken sentences unless asked for detail. A \
 'refused:' answer means the request is outside what this connector allows; say so, do \
 not retry with variations. post_handoff writes a note Claude Code will read: use it \
 when the owner asks to pass something on, and read the title and body back first. \
-request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
+create_issue and comment_issue write to GitHub: read the title and text back first; a \
+'needs_approval' or 'held' answer means the publication check kept it for the owner, so \
+say so and do not reword it to get past the check. request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
 it on their desk with Face ID or Touch ID, and use work_status to say what became of it. It \
 answers with one line for Claude Code: show that line to the owner exactly as given, on \
 its own, ready to copy, and tell them to paste it into a Claude Code session.
@@ -36,6 +38,14 @@ its own, ready to copy, and tell them to paste it into a Claude Code session.
 # conversation read elsewhere (an issue comment, a README), so whoever reads it treats it
 # as data, never as an instruction.
 requires_flag = "allow-handoff"
+
+[classes.issue_write]
+# open an issue or comment on one, through correspond, whose before_send check (the
+# machine's one publication check for every writer) runs first and holds what it flags:
+# nothing reaches a public repository unchecked. Create and comment only: no labels, no
+# assignees, no edits. Off until ~/.config/hatchway/allow-issue-write exists; a machine's
+# private profile narrows which repositories (its own accounts and organisations).
+requires_flag = "allow-issue-write"
 
 [classes.work_request]
 # one ask: queue a job on an issue for the owner to confirm in person. It starts nothing:
@@ -245,3 +255,48 @@ max_positional = 1
 positional_pattern = "[0-9a-f]{12}"
 arg = "the request id request_work gave"
 help = "What became of a work request: queued, started, declined, refused or expired."
+
+# --- issue writes: open an issue or comment, through the publication check ----------------
+
+[[rule]]
+match = ["correspond", "send", "issue"]
+tool = "create_issue"
+class = "issue_write"
+param = "repo"
+argv = ["correspond", "send"]
+value_flags = [
+  { names = ["--title", "-t"], free = true },
+  { names = ["--text"], free = true },
+  { names = ["--idempotency-key"], pattern = "[A-Za-z0-9_.-]{1,64}" },
+]
+stdin = "--text"
+tail = ["-"]
+min_positional = 1
+max_positional = 1
+# Matches no repository here: each machine's private profile names the repositories it
+# may write to (whose only readers are the owner, unless its publication check covers
+# every audience). A machine that turns the flag on without narrowing writes nowhere.
+positional_pattern = "(?!)"
+arg = "github:OWNER/REPO"
+help = "Open an issue (title, text in markdown). The machine's publication check runs first; what it flags is held for the owner, not posted."
+
+[[rule]]
+match = ["correspond", "send", "comment"]
+tool = "comment_issue"
+class = "issue_write"
+param = "issue"
+argv = ["correspond", "send"]
+value_flags = [
+  { names = ["--text"], free = true },
+  { names = ["--idempotency-key"], pattern = "[A-Za-z0-9_.-]{1,64}" },
+]
+stdin = "--text"
+tail = ["-"]
+min_positional = 1
+max_positional = 1
+# Matches no repository here: each machine's private profile names the repositories it
+# may write to (whose only readers are the owner, unless its publication check covers
+# every audience). A machine that turns the flag on without narrowing writes nowhere.
+positional_pattern = "(?!)"
+arg = "github:OWNER/REPO#NUMBER"
+help = "Comment on an issue or pull request. The machine's publication check runs first; what it flags is held for the owner, not posted."

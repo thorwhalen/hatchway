@@ -168,6 +168,12 @@ def gate(
         dispatch_roots=settings.dispatch_roots,
         roots=settings.all_roots(),
     )
+    if decision.rule is not None and decision.rule.stdin:
+        # a rule whose text goes to stdin: that text is the agent's content, never logged,
+        # allowed or refused
+        record["request"] = (
+            " ".join(decision.rule.match) + f" [text withheld: {len(request)} chars]"
+        )
     if not decision.allowed:
         sys.stderr.write(
             f"hatchway: refused: {decision.reason}. Send 'help' for what is allowed.\n"
