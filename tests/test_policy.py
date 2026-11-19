@@ -201,8 +201,12 @@ def test_message_session_use_and_abuse():
     assert d.stdin == "stop now" and d.argv[-2:] == ("--", "alpha-1")
     # off without its flag; no other intent kinds; no store override; no odd session names
     assert not decide("crowsnest intent put alpha --text hi", p, flags_present=set()).allowed
-    assert not decide("crowsnest intent put start alpha --text hi", p, flags_present=on).allowed
-    assert not decide("crowsnest intent put alpha --store /x --text hi", p, flags_present=on).allowed
+    assert not decide(
+        "crowsnest intent put start alpha --text hi", p, flags_present=on
+    ).allowed
+    assert not decide(
+        "crowsnest intent put alpha --store /x --text hi", p, flags_present=on
+    ).allowed
     assert not decide("crowsnest intent put ../x --text hi", p, flags_present=on).allowed
     assert not decide("crowsnest intent put alpha", p, flags_present=on).allowed
 

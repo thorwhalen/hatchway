@@ -144,9 +144,7 @@ def test_served_over_mcp(claude_ai):
     async def go():
         async with fastmcp.Client(server) as c:
             tools = {t.name: t for t in await c.list_tools()}
-            res = await c.call_tool(
-                "read_issue", {"number": "7", "repo": "a/b"}
-            )
+            res = await c.call_tool("read_issue", {"number": "7", "repo": "a/b"})
             return tools, res
 
     tools, res = asyncio.run(go())
