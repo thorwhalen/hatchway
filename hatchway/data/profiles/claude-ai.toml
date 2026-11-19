@@ -25,7 +25,7 @@ the documents it links to). post_handoff writes a note Claude Code will read: us
 when the owner asks to pass something on, and read the title and body back first. \
 create_issue and comment_issue write to GitHub: read the title and text back first; a \
 'needs_approval' or 'held' answer means the publication check kept it for the owner, so \
-say so and do not reword it to get past the check. request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
+say so and do not reword it to get past the check. message_session queues a message for one session (read it back first); it is picked up later, so follow it with intent_status. request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
 it on their desk with Face ID or Touch ID, and use work_status to say what became of it. It \
 answers with one line for Claude Code: show that line to the owner exactly as given, on \
 its own, ready to copy, and tell them to paste it into a Claude Code session.
@@ -48,6 +48,14 @@ requires_flag = "allow-handoff"
 # assignees, no edits. Off until ~/.config/hatchway/allow-issue-write exists; a machine's
 # private profile narrows which repositories (its own accounts and organisations).
 requires_flag = "allow-issue-write"
+
+[classes.session_message]
+# one write: queue a message ("work on X", "stop", "status?") for a named session, as the
+# owner's console page does. It is an intent in the console store; the courier carries it
+# and the session answers it, so intent_status says what became of it. Reversible (the
+# session may decline, and nothing is deleted). Off until
+# ~/.config/hatchway/allow-session-message exists.
+requires_flag = "allow-session-message"
 
 [classes.work_request]
 # one ask: queue a job on an issue for the owner to confirm in person. It starts nothing:
@@ -171,8 +179,8 @@ help = "Issues of a repository (repo: OWNER/REPO; state: open, closed or all; se
 match = ["gh", "issue", "view"]
 tool = "read_issue"
 param = "number"
-argv = ["gh", "issue", "view"]
-flags = ["--comments"]
+# --json skips the deprecated Projects (classic) field that plain `gh issue view` queries
+argv = ["gh", "issue", "view", "--json", "number,title,state,author,labels,body,url,createdAt,closedAt,comments"]
 value_flags = [
   { names = ["--repo", "-R"], pattern = "(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}" },
 ]
@@ -180,7 +188,7 @@ min_positional = 1
 max_positional = 1
 positional_pattern = "[0-9]{1,7}"
 arg = "the issue number"
-help = "One issue in full (repo: OWNER/REPO; comments: include the discussion)."
+help = "One issue in full, with its discussion, as JSON (repo: OWNER/REPO)."
 
 # --- the handoff inbox (annals), shared with Claude Code -------------------------------
 
@@ -248,6 +256,23 @@ max_positional = 1
 positional_pattern = "[0-9]{8}T[0-9]{6}Z-[0-9a-f]{8}|key-[0-9a-f]{32}"
 arg = "the intent's id"
 help = "Whether a message queued for a session was picked up: queued, handed, done or failed, with its one-line answer."
+
+[[rule]]
+match = ["crowsnest", "intent", "put"]
+tool = "message_session"
+class = "session_message"
+param = "session"
+argv = ["crowsnest", "intent", "put", "tell"]
+value_flags = [
+  { names = ["--text"], free = true },
+  { names = ["--idempotency-key"], pattern = "[A-Za-z0-9_.-]{1,64}" },
+]
+stdin = "--text"
+min_positional = 1
+max_positional = 1
+positional_pattern = "[A-Za-z0-9][A-Za-z0-9_.-]{0,63}(?:@[A-Za-z0-9_-]{1,32})?"
+arg = "the session's name, as session_roster shows it"
+help = "Send a message to one Claude Code session (text: what to do, e.g. 'work on X', 'stop', 'reply with your status'). Queued, not instant: the answer is an intent id; use intent_status to see whether it was picked up."
 
 # --- work requests: a job on an issue, confirmed by the owner in person ----------------
 
