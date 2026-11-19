@@ -189,6 +189,84 @@ def with_fallback(
     return run
 
 
+def tag_lines(name: str, text: str) -> str:
+    """Every non-blank line of ``text`` prefixed with ``[name]``, so merged rows say whose they are.
+
+    >>> print(tag_lines("tw", "busy  a\\n\\nidle  b"), end="")
+    [tw] busy  a
+    <BLANKLINE>
+    [tw] idle  b
+    """
+    return "".join(
+        f"[{name}] {line}\n" if line.strip() else "\n" for line in text.splitlines()
+    )
+
+
+def _why_not(result: Result, *, is_down: Callable[[Result], bool]) -> str:
+    """One line saying why a part gave no answer, for the footer of a merged reply."""
+    lines = (result.err.strip() or result.out.strip()).splitlines()
+    first, last = (lines[0], lines[-1]) if lines else ("", "")
+    if is_down(result):
+        return f"did not answer: {first}" if first else "did not answer"
+    if result.status == REFUSED:
+        return f"refused: {last}" if last else "refused"
+    tail = f": {last[-200:]}" if last else ""
+    return f"failed, exit {result.status}{tail}"
+
+
+def fan_out(
+    runners: Mapping[str, Runner],
+    *,
+    label: Callable[[str, str], str] = tag_lines,
+    is_down: Callable[[Result], bool] = unreachable,
+) -> Runner:
+    """Ask every runner at once and merge their answers, each part labelled with its name.
+
+    Where :func:`with_fallback` asks a second machine only when the first is down,
+    ``fan_out`` asks all of them, for questions every machine answers about itself (its
+    own sessions). The parts come back in the order of ``runners``, each through
+    ``label`` (default :func:`tag_lines`). A part that could not be reached, was refused
+    or failed does not fail the call: it is named on a line of its own at the end, so the
+    reader knows whose answer is missing rather than reading a partial list as whole. A
+    part that answered with nothing is named too.
+
+    The call fails only when no part answered: then the status is the first part's
+    (a refusal everywhere stays a refusal) and the error names every part.
+
+    >>> up = lambda r: Result(0, "busy  a\\n", "")
+    >>> down = lambda r: Result(UNREACHABLE, "", "ssh: connect to host x: Operation timed out")
+    >>> print(fan_out({"mac": down, "tw": up})("crowsnest roster").out, end="")
+    [tw] busy  a
+    [mac] (did not answer: ssh: connect to host x: Operation timed out)
+    """
+    names = list(runners)
+
+    def ask(name: str, request: str) -> Result:
+        try:
+            return runners[name](request)
+        except Exception as e:  # noqa: BLE001 -- a broken part is a missing part, not a failed call
+            return Result(1, "", f"{type(e).__name__}: {e}")
+
+    def run(request: str) -> Result:
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=max(len(names), 1)) as pool:
+            results = list(pool.map(lambda n: ask(n, request), names))
+        parts, missing = [], []
+        for name, result in zip(names, results):
+            if result.status != 0:
+                missing.append(f"[{name}] ({_why_not(result, is_down=is_down)})\n")
+            elif result.out.strip():
+                parts.append(label(name, result.out))
+            else:
+                missing.append(f"[{name}] (nothing)\n")
+        if parts or any(r.status == 0 for r in results):
+            return Result(0, "".join(parts + missing), "")
+        return Result(results[0].status if results else 1, "", "".join(missing))
+
+    return run
+
+
 def _param_name(flag: str) -> str:
     name = re.sub(r"[^0-9A-Za-z_]", "_", flag.lstrip("-"))
     return name + "_" if keyword.iskeyword(name) or not name.isidentifier() else name

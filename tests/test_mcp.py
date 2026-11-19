@@ -177,3 +177,67 @@ def test_routing_and_fallback():
     assert ran("crowsnest x").status == 255  # it reached the far side: never run twice
     slow = with_fallback(lambda r: Result(124, "", "no answer after 150s"), server)
     assert slow("crowsnest x").status == 124
+
+
+def test_fan_out_merges_and_names_the_missing():
+    from hatchway.mcp import REFUSED, UNREACHABLE, fan_out
+
+    seen = []
+
+    def machine(name, status=0, out="", err=""):
+        def run(r):
+            seen.append((name, r))
+            return Result(status, out, err)
+
+        return run
+
+    run = fan_out(
+        {
+            "mac": machine(
+                "mac", UNREACHABLE, err="ssh: connect to host: Operation timed out"
+            ),
+            "tw": machine("tw", out="busy  a\nidle  b\n"),
+            "iq": machine("iq", out="idle  c\n"),
+            "box": machine("box", out=""),
+        }
+    )
+    got = run("crowsnest roster --brief")
+    assert got.status == 0
+    assert got.out.splitlines() == [
+        "[tw] busy  a",
+        "[tw] idle  b",
+        "[iq] idle  c",
+        "[mac] (did not answer: ssh: connect to host: Operation timed out)",
+        "[box] (nothing)",
+    ]
+    assert sorted(seen) == sorted(
+        (n, "crowsnest roster --brief") for n in ("mac", "tw", "iq", "box")
+    )
+
+    # a session lives on one machine: the others' failures are named, the answer stands
+    one = fan_out(
+        {"tw": machine("tw", 1, err="no session named x"), "iq": machine("iq", out="x: ok")}
+    )
+    assert (
+        one("crowsnest recap x").out
+        == "[iq] x: ok\n[tw] (failed, exit 1: no session named x)\n"
+    )
+
+    # nobody answered: the call fails, naming every part; a refusal everywhere stays one
+    none = fan_out(
+        {"a": machine("a", UNREACHABLE, err="ssh: connect: refused"), "b": machine("b", 2)}
+    )
+    r = none("crowsnest roster")
+    assert (
+        r.status == UNREACHABLE
+        and "[a] (did not answer" in r.err
+        and "[b] (failed, exit 2)" in r.err
+    )
+    assert fan_out({"a": machine("a", REFUSED, err="no rule")})("x").status == REFUSED
+
+    # a part that raises is a missing part, not a failed call
+    def boom(r):
+        raise OSError("no ssh binary")
+
+    mixed = fan_out({"a": boom, "b": machine("b", out="ok")})("x")
+    assert mixed.status == 0 and "[a] (failed, exit 1: OSError: no ssh binary)" in mixed.out
