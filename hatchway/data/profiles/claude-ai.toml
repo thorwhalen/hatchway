@@ -20,7 +20,9 @@ session_turns). Long answers come in pages: the answer says which offset to ask 
 Summarise what comes back in a few spoken sentences unless asked for detail. A \
 'refused:' answer means the request is outside what this connector allows; say so, do \
 not retry with variations. post_handoff writes a note Claude Code will read: use it \
-when the owner asks to pass something on, and read the title and body back first.
+when the owner asks to pass something on, and read the title and body back first. It \
+answers with one line for Claude Code: show that line to the owner exactly as given, on \
+its own, ready to copy, and tell them to paste it into a Claude Code session.
 """
 
 [classes.read]
@@ -192,4 +194,7 @@ value_flags = [
   { names = ["--text"], free = true },
 ]
 stdin = "--text"
-help = "Leave a note for Claude Code: title and markdown text, up to about 7000 characters (decisions, next steps, links)."
+reply = """Posted: {out}
+Line to paste into Claude Code:
+Read the handoff {out} with `annals aggregate {out}` and act on it."""
+help = "Leave a note for Claude Code: title and markdown text, up to about 7000 characters (decisions, next steps, links). Returns the line to paste into Claude Code."

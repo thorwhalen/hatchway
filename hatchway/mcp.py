@@ -405,6 +405,8 @@ def mk_tool(rule: Rule, *, runner: Runner, max_chars: int = DFLT_MAX_CHARS) -> C
         if names:
             words += list(names) if many else [names]
         result = runner(shlex.join(words))
+        if rule.reply and result.status == 0:
+            result = Result(0, rule.reply.format(out=result.out.strip()), result.err)
         offset = max(0, int(kw.get("offset") or 0)) if pages else 0
         return _answer(result, offset=offset, max_chars=max_chars)
 
