@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=282f96c0"></script>
+    <script src="../../_static/documentation_options.js?v=1fd71caa"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.5" />
+  <meta name="docsearch:version" content="0.0.6" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -858,15 +858,27 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="routed_runner">
 <a class="viewcode-back" href="../../_autosummary/hatchway.mcp.html#hatchway.mcp.routed_runner">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">routed_runner</span><span class="p">(</span><span class="n">default</span><span class="p">:</span> <span class="n">Runner</span><span class="p">,</span> <span class="n">routes</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Runner</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Runner</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Send a request to the runner its first word names in ``routes``, else ``default``.</span>
+<span class="w">    </span><span class="sd">"""Send a request to the runner of the longest leading words it matches in ``routes``.</span>
 
-<span class="sd">    So one server can answer about sessions from the machine that has them and about</span>
-<span class="sd">    repositories from another: ``routed_runner(server, {"crowsnest": laptop})``.</span>
+<span class="sd">    A key is one word or several separated by spaces; the longest key that the request's</span>
+<span class="sd">    first words match wins, else ``default``. So one server can answer about sessions from</span>
+<span class="sd">    every machine and about one store from one: ``routed_runner(server, {"crowsnest":</span>
+<span class="sd">    fan_out(...), "crowsnest intent": server})``.</span>
+
+<span class="sd">    &gt;&gt;&gt; run = routed_runner(lambda r: "default", {"a": lambda r: "a", "a b": lambda r: "a b"})</span>
+<span class="sd">    &gt;&gt;&gt; run("a b c"), run("a c"), run("ab"), run("z")</span>
+<span class="sd">    ('a b', 'a', 'default', 'default')</span>
 <span class="sd">    """</span>
+    <span class="n">keyed</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="p">((</span><span class="nb">tuple</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">()),</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">routes</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">kv</span><span class="p">:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">kv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
-        <span class="n">first</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">routes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">default</span><span class="p">)(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">runner</span> <span class="ow">in</span> <span class="n">keyed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">words</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)])</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">runner</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">default</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">run</span></div>
 

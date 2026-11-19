@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=282f96c0"></script>
+    <script src="../_static/documentation_options.js?v=1fd71caa"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.5" />
+  <meta name="docsearch:version" content="0.0.6" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -462,7 +462,7 @@ holding any of their credentials. Building the server needs <code class="docutil
 <td><p>The tools for every rule of <code class="docutils literal notranslate"><span class="pre">profile</span></code> in one of <code class="docutils literal notranslate"><span class="pre">classes</span></code>, in profile order.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.routed_runner" title="hatchway.mcp.routed_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">routed_runner</span></code></a>(default, routes)</p></td>
-<td><p>Send a request to the runner its first word names in <code class="docutils literal notranslate"><span class="pre">routes</span></code>, else <code class="docutils literal notranslate"><span class="pre">default</span></code>.</p></td>
+<td><p>Send a request to the runner of the longest leading words it matches in <code class="docutils literal notranslate"><span class="pre">routes</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.ssh_runner" title="hatchway.mcp.ssh_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ssh_runner</span></code></a>(destination, *[, identity, ssh, ...])</p></td>
 <td><p>Send each request over SSH to <code class="docutils literal notranslate"><span class="pre">destination</span></code>, whose key's forced command is the gate.</p></td>
@@ -628,9 +628,16 @@ so a gated class whose flag is absent answers “refused” rather than running.
 <dl class="py function">
 <dt class="sig sig-object py" id="hatchway.mcp.routed_runner">
 <span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">routed_runner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hatchway/mcp.html#routed_runner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hatchway.mcp.routed_runner" title="Link to this definition">#</a></dt>
-<dd><p>Send a request to the runner its first word names in <code class="docutils literal notranslate"><span class="pre">routes</span></code>, else <code class="docutils literal notranslate"><span class="pre">default</span></code>.</p>
-<p>So one server can answer about sessions from the machine that has them and about
-repositories from another: <code class="docutils literal notranslate"><span class="pre">routed_runner(server,</span> <span class="pre">{&quot;crowsnest&quot;:</span> <span class="pre">laptop})</span></code>.</p>
+<dd><p>Send a request to the runner of the longest leading words it matches in <code class="docutils literal notranslate"><span class="pre">routes</span></code>.</p>
+<p>A key is one word or several separated by spaces; the longest key that the request’s
+first words match wins, else <code class="docutils literal notranslate"><span class="pre">default</span></code>. So one server can answer about sessions from
+every machine and about one store from one: <code class="docutils literal notranslate"><span class="pre">routed_runner(server,</span> <span class="pre">{&quot;crowsnest&quot;:</span>
+<span class="pre">fan_out(...),</span> <span class="pre">&quot;crowsnest</span> <span class="pre">intent&quot;:</span> <span class="pre">server})</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">run</span> <span class="o">=</span> <span class="n">routed_runner</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="s2">"default"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"a"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="s2">"a"</span><span class="p">,</span> <span class="s2">"a b"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="s2">"a b"</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">run</span><span class="p">(</span><span class="s2">"a b c"</span><span class="p">),</span> <span class="n">run</span><span class="p">(</span><span class="s2">"a c"</span><span class="p">),</span> <span class="n">run</span><span class="p">(</span><span class="s2">"ab"</span><span class="p">),</span> <span class="n">run</span><span class="p">(</span><span class="s2">"z"</span><span class="p">)</span>
+<span class="go">('a b', 'a', 'default', 'default')</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference internal" href="#hatchway.mcp.Result" title="hatchway.mcp.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a>]</span></p>

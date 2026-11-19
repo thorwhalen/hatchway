@@ -48,7 +48,7 @@ holding any of their credentials. Building the server needs `fastmcp`
 | [`mk_server`](#hatchway.mcp.mk_server)([profile, runner, settings, ...])       | A `FastMCP` server over `profile`'s rules.                                                |
 | [`mk_tool`](#hatchway.mcp.mk_tool)(rule, \*, runner[, max_chars])            | One callable for `rule`, with a real signature, so any MCP host can type it.              |
 | [`mk_tools`](#hatchway.mcp.mk_tools)(profile, \*, runner[, classes, ...])     | The tools for every rule of `profile` in one of `classes`, in profile order.              |
-| [`routed_runner`](#hatchway.mcp.routed_runner)(default, routes)                    | Send a request to the runner its first word names in `routes`, else `default`.            |
+| [`routed_runner`](#hatchway.mcp.routed_runner)(default, routes)                    | Send a request to the runner of the longest leading words it matches in `routes`.         |
 | [`ssh_runner`](#hatchway.mcp.ssh_runner)(destination, \*[, identity, ssh, ...]) | Send each request over SSH to `destination`, whose key's forced command is the gate.      |
 | [`tag_lines`](#hatchway.mcp.tag_lines)(name, text)                             | Every non-blank line of `text` prefixed with `[name]`, so merged rows say whose they are. |
 | [`tool_name`](#hatchway.mcp.tool_name)(rule)                                   | The MCP name of a rule: its `tool` key, else its words joined by underscores.             |
@@ -164,10 +164,18 @@ so a gated class whose flag is absent answers “refused” rather than running.
 
 ### hatchway.mcp.routed_runner(default, routes)
 
-Send a request to the runner its first word names in `routes`, else `default`.
+Send a request to the runner of the longest leading words it matches in `routes`.
 
-So one server can answer about sessions from the machine that has them and about
-repositories from another: `routed_runner(server, {"crowsnest": laptop})`.
+A key is one word or several separated by spaces; the longest key that the request’s
+first words match wins, else `default`. So one server can answer about sessions from
+every machine and about one store from one: `routed_runner(server, {"crowsnest":
+fan_out(...), "crowsnest intent": server})`.
+
+```pycon
+>>> run = routed_runner(lambda r: "default", {"a": lambda r: "a", "a b": lambda r: "a b"})
+>>> run("a b c"), run("a c"), run("ab"), run("z")
+('a b', 'a', 'default', 'default')
+```
 
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](#hatchway.mcp.Result)]
