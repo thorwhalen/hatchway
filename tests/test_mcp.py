@@ -35,7 +35,9 @@ def _tool(tools, name):
 
 def test_every_rule_is_a_uniquely_named_tool(claude_ai):
     tools = mk_tools(
-        claude_ai, runner=lambda r: Result(0, "", ""), classes=("read", "handoff")
+        claude_ai,
+        runner=lambda r: Result(0, "", ""),
+        classes=("read", "handoff", "work_request"),
     )
     assert [t.__name__ for t in tools] == [tool_name(r) for r in claude_ai.rules]
     assert "post_handoff" not in {t.__name__ for t in mk_tools(claude_ai, runner=None)}
