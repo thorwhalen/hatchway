@@ -347,23 +347,44 @@ def test_intent_status_is_read_only_and_routed_alone():
     assert run(ok).out == "one" and run("crowsnest roster").out == "[a] a\n[b] b\n"
 
 
-def test_issue_writes_are_gated_and_read_their_text_from_stdin():
+def test_issue_writes_are_gated_narrowed_and_read_their_text_from_stdin(tmp_path):
     from hatchway.config import load_profile
     from hatchway.policy import decide
 
-    p = load_profile("claude-ai")
     on = {"allow-issue-write"}
     req = "correspond send issue --title 'A bug' --text 'Body - with dash' github:o/r"
+    bundled = load_profile("claude-ai")
+    assert not decide(req, bundled, flags_present=on).allowed  # writes nowhere until narrowed
+    local = tmp_path / "mine.toml"
+    local.write_text(
+        'extends = "claude-ai"\n'
+        "[[rule]]\n"
+        'match = ["correspond", "send", "issue"]\nclass = "issue_write"\n'
+        'argv = ["correspond", "send"]\nstdin = "--text"\ntail = ["-"]\n'
+        'value_flags = [{ names = ["--title", "-t"], free = true }, { names = ["--text"], free = true }]\n'
+        'min_positional = 1\nmax_positional = 1\npositional_pattern = "github:o/[a-z]{1,9}"\n'
+    )
+    p = load_profile(str(local))
     assert not decide(req, p, flags_present=set()).allowed
     d = decide(req, p, flags_present=on)
     assert d.argv == ("correspond", "send", "--title", "A bug", "--", "github:o/r", "-")
     assert d.stdin == "Body - with dash"
-    c = decide("correspond send comment --text hi github:o/r#12", p, flags_present=on)
-    assert c.argv[-3:] == ("--", "github:o/r#12", "-")
-    for bad in ("github:o/r#12 x", "github:../r", "github:o/my-secrets", "o/r"):
-        assert not decide(
-            f"correspond send issue --title t --text b {bad}", p, flags_present=on
-        ).allowed
+    assert not decide(req.replace("github:o/r", "github:x/r"), p, flags_present=on).allowed
     assert not decide(
         "correspond send issue --title t github:o/r", p, flags_present=on
     ).allowed
+
+
+def test_a_text_for_stdin_is_never_logged_even_when_refused(tmp_path, monkeypatch):
+    import json as _json
+
+    from hatchway.config import Settings
+    from hatchway.gate import gate
+
+    monkeypatch.setenv("HATCHWAY_DATA_DIR", str(tmp_path))
+    settings = Settings(profile="claude-ai")
+    req = "correspond send issue --title t --text 'SECRET BODY' github:o/r"
+    gate(req, agent="t", profile="claude-ai", settings=settings)
+    logged = "".join(p.read_text() for p in tmp_path.rglob("*.jsonl"))
+    assert logged and "SECRET BODY" not in logged and "text withheld" in logged
+    assert all(_json.loads(line)["decision"] == "refused" for line in logged.splitlines())

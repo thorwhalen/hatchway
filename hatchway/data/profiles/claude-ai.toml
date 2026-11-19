@@ -273,7 +273,10 @@ stdin = "--text"
 tail = ["-"]
 min_positional = 1
 max_positional = 1
-positional_pattern = "github:(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9_.-]{0,99}/[A-Za-z0-9_.-]{1,100}"
+# Matches no repository here: each machine's private profile names the repositories it
+# may write to (whose only readers are the owner, unless its publication check covers
+# every audience). A machine that turns the flag on without narrowing writes nowhere.
+positional_pattern = "(?!)"
 arg = "github:OWNER/REPO"
 help = "Open an issue (title, text in markdown). The machine's publication check runs first; what it flags is held for the owner, not posted."
 
@@ -291,6 +294,9 @@ stdin = "--text"
 tail = ["-"]
 min_positional = 1
 max_positional = 1
-positional_pattern = "github:(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9_.-]{0,99}/[A-Za-z0-9_.-]{1,100}#[0-9]{1,7}"
+# Matches no repository here: each machine's private profile names the repositories it
+# may write to (whose only readers are the owner, unless its publication check covers
+# every audience). A machine that turns the flag on without narrowing writes nowhere.
+positional_pattern = "(?!)"
 arg = "github:OWNER/REPO#NUMBER"
 help = "Comment on an issue or pull request. The machine's publication check runs first; what it flags is held for the owner, not posted."
