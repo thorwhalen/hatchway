@@ -203,15 +203,17 @@ def tag_lines(name: str, text: str) -> str:
 
 
 def _why_not(result: Result, *, is_down: Callable[[Result], bool]) -> str:
-    """One line saying why a part gave no answer, for the footer of a merged reply."""
+    """One line saying why a part gave no answer, for the footer of a merged reply.
+
+    The last line of what it said: ssh puts its warnings first and its verdict last.
+    """
     lines = (result.err.strip() or result.out.strip()).splitlines()
-    first, last = (lines[0], lines[-1]) if lines else ("", "")
+    why = f": {lines[-1][-200:]}" if lines else ""
     if is_down(result):
-        return f"did not answer: {first}" if first else "did not answer"
+        return f"did not answer{why}"
     if result.status == REFUSED:
-        return f"refused: {last}" if last else "refused"
-    tail = f": {last[-200:]}" if last else ""
-    return f"failed, exit {result.status}{tail}"
+        return f"refused{why}"
+    return f"failed, exit {result.status}{why}"
 
 
 def fan_out(
