@@ -35,7 +35,9 @@ def _tool(tools, name):
 
 def test_every_rule_is_a_uniquely_named_tool(claude_ai):
     tools = mk_tools(
-        claude_ai, runner=lambda r: Result(0, "", ""), classes=("read", "handoff")
+        claude_ai,
+        runner=lambda r: Result(0, "", ""),
+        classes=("read", "handoff", "work_request"),
     )
     assert [t.__name__ for t in tools] == [tool_name(r) for r in claude_ai.rules]
     assert "post_handoff" not in {t.__name__ for t in mk_tools(claude_ai, runner=None)}
@@ -309,3 +311,37 @@ def test_bundled_post_handoff_returns_a_paste_line():
     p = load_profile("claude-ai")
     (rule,) = [r for r in p.rules if r.tool == "post_handoff"]
     assert "annals aggregate {out}" in rule.reply
+
+
+def test_bundled_work_request_is_gated_and_narrow():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    ask = "equerry-desk request-work --repo o/r --number 7"
+    assert not decide(ask, p, flags_present=set()).allowed  # off until its flag exists
+    on = {"allow-work-request"}
+    assert decide(ask, p, flags_present=on).argv[-2:] == ("--number", "7")
+    assert not decide(ask + " --model fable", p, flags_present=on).allowed
+    assert not decide(
+        "equerry-desk request-work --repo ../x --number 1", p, flags_present=on
+    ).allowed
+    assert decide("equerry-desk request-status 0123456789ab", p, flags_present=set()).allowed
+    assert not decide("equerry-desk request-status ../../x", p, flags_present=set()).allowed
+
+
+def test_intent_status_is_read_only_and_routed_alone():
+    from hatchway.config import load_profile
+    from hatchway.mcp import fan_out, routed_runner
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    ok = "crowsnest intent status 20261119T084800Z-0123abcd"
+    assert decide(ok, p, flags_present=set()).allowed
+    assert not decide("crowsnest intent put tell x", p, flags_present=set()).allowed
+    every = fan_out({"a": lambda r: Result(0, "a\n", ""), "b": lambda r: Result(0, "b\n", "")})
+    run = routed_runner(
+        lambda r: Result(0, "server", ""),
+        {"crowsnest": every, "crowsnest intent": lambda r: Result(0, "one", "")},
+    )
+    assert run(ok).out == "one" and run("crowsnest roster").out == "[a] a\n[b] b\n"

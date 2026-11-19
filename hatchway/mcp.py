@@ -133,15 +133,27 @@ UNREACHABLE = 255  # what ssh exits with when it cannot connect
 
 
 def routed_runner(default: Runner, routes: Mapping[str, Runner]) -> Runner:
-    """Send a request to the runner its first word names in ``routes``, else ``default``.
+    """Send a request to the runner of the longest leading words it matches in ``routes``.
 
-    So one server can answer about sessions from the machine that has them and about
-    repositories from another: ``routed_runner(server, {"crowsnest": laptop})``.
+    A key is one word or several separated by spaces; the longest key that the request's
+    first words match wins, else ``default``. So one server can answer about sessions from
+    every machine and about one store from one: ``routed_runner(server, {"crowsnest":
+    fan_out(...), "crowsnest intent": server})``.
+
+    >>> run = routed_runner(lambda r: "default", {"a": lambda r: "a", "a b": lambda r: "a b"})
+    >>> run("a b c"), run("a c"), run("ab"), run("z")
+    ('a b', 'a', 'default', 'default')
     """
+    keyed = sorted(
+        ((tuple(k.split()), v) for k, v in routes.items()), key=lambda kv: -len(kv[0])
+    )
 
     def run(request: str) -> Result:
-        first = request.split(" ", 1)[0]
-        return routes.get(first, default)(request)
+        words = request.split()
+        for key, runner in keyed:
+            if tuple(words[: len(key)]) == key:
+                return runner(request)
+        return default(request)
 
     return run
 
