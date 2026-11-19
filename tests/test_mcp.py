@@ -177,3 +177,105 @@ def test_routing_and_fallback():
     assert ran("crowsnest x").status == 255  # it reached the far side: never run twice
     slow = with_fallback(lambda r: Result(124, "", "no answer after 150s"), server)
     assert slow("crowsnest x").status == 124
+
+
+def test_fan_out_merges_and_names_the_missing():
+    from hatchway.mcp import REFUSED, UNREACHABLE, fan_out
+
+    seen = []
+
+    def machine(name, status=0, out="", err=""):
+        def run(r):
+            seen.append((name, r))
+            return Result(status, out, err)
+
+        return run
+
+    run = fan_out(
+        {
+            "mac": machine(
+                "mac", UNREACHABLE, err="ssh: connect to host: Operation timed out"
+            ),
+            "tw": machine("tw", out="busy  a\nidle  b\n"),
+            "iq": machine("iq", out="idle  c\n"),
+            "box": machine("box", out=""),
+        }
+    )
+    got = run("crowsnest roster --brief")
+    assert got.status == 0
+    assert got.out.splitlines() == [
+        "[tw] busy  a",
+        "[tw] idle  b",
+        "[iq] idle  c",
+        "[mac] (did not answer: ssh: connect to host: Operation timed out)",
+        "[box] (nothing)",
+    ]
+    assert sorted(seen) == sorted(
+        (n, "crowsnest roster --brief") for n in ("mac", "tw", "iq", "box")
+    )
+
+    # a session lives on one machine: the others' failures are named, the answer stands
+    one = fan_out(
+        {"tw": machine("tw", 1, err="no session named x"), "iq": machine("iq", out="x: ok")}
+    )
+    assert (
+        one("crowsnest recap x").out
+        == "[iq] x: ok\n[tw] (failed, exit 1: no session named x)\n"
+    )
+
+    # nobody answered: the call fails, naming every part; a refusal everywhere stays one
+    none = fan_out(
+        {"a": machine("a", UNREACHABLE, err="ssh: connect: refused"), "b": machine("b", 2)}
+    )
+    r = none("crowsnest roster")
+    assert (
+        r.status == 2  # the first part that reached its machine
+        and "[a] (did not answer" in r.err
+        and "[b] (failed, exit 2)" in r.err
+    )
+    assert fan_out({"a": machine("a", REFUSED, err="no rule")})("x").status == REFUSED
+
+    # a part that raises is a missing part, not a failed call
+    def boom(r):
+        raise OSError("no ssh binary")
+
+    mixed = fan_out({"a": boom, "b": machine("b", out="ok")})("x")
+    assert mixed.status == 0 and "[a] (failed, exit 1: OSError: no ssh binary)" in mixed.out
+
+
+def test_fan_out_deadline_cache_and_refusal():
+    import time as _time
+
+    from hatchway.mcp import BUSY, REFUSED, UNREACHABLE, fan_out
+
+    calls = []
+
+    def fast(r):
+        calls.append(r)
+        return Result(0, f"n={len(calls)}\n", "")
+
+    def slow(r):
+        _time.sleep(2)
+        return Result(0, "late\n", "")
+
+    t0 = _time.monotonic()
+    got = fan_out({"a": fast, "b": slow}, deadline=0.3, ttl=0)("x")
+    assert _time.monotonic() - t0 < 1.5  # the late part is not waited for
+    assert got.out == "[a] n=1\n[b] (failed, exit 124: no answer within 0s)\n"
+
+    now = [100.0]
+    cached = fan_out({"a": fast}, ttl=30, clock=lambda: now[0])
+    first = cached("y").out
+    assert cached("y").out == first  # pages of one answer hold still
+    now[0] += 31
+    assert cached("y").out != first  # and expire
+
+    # the Mac asleep does not mask a refusal from the others
+    down = lambda r: Result(UNREACHABLE, "", "ssh: connect: refused")
+    no = lambda r: Result(REFUSED, "", "no rule")
+    assert fan_out({"mac": down, "tw": no}, ttl=0)("x").status == REFUSED
+    busy = lambda r: Result(BUSY, "", "another call is running")
+    assert (
+        "[tw] (busy: another call is running)"
+        in fan_out({"tw": busy, "a": fast}, ttl=0)("x").out
+    )
