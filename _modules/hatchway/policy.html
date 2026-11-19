@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=1fd71caa"></script>
+    <script src="../../_static/documentation_options.js?v=bbaf98b3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.6" />
+  <meta name="docsearch:version" content="0.0.7" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -793,6 +793,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    so a body of text (a note to publish) never lands in ``argv``. ``reply`` shapes a</span>
 <span class="sd">    successful answer for those transports: a template whose only field is ``{out}``, the</span>
 <span class="sd">    command's output stripped (a published link turned into a line to paste elsewhere).</span>
+<span class="sd">    ``tail`` is fixed words placed after the request's arguments (``-``, for a command</span>
+<span class="sd">    that reads its text from standard input only in that position).</span>
 <span class="sd">    """</span>
 
     <span class="n">match</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
@@ -811,6 +813,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">param</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">stdin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">reply</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">tail</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Rule</span><span class="p">:</span>
@@ -851,6 +854,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">param</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"param"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
             <span class="n">stdin</span><span class="o">=</span><span class="n">stdin</span><span class="p">,</span>
             <span class="n">reply</span><span class="o">=</span><span class="n">reply</span><span class="p">,</span>
+            <span class="n">tail</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tail"</span><span class="p">,</span> <span class="p">())),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">value_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValueFlag</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -1008,7 +1012,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">rule</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"file"</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_decide_file</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">positional</span><span class="p">,</span> <span class="n">roots</span> <span class="ow">or</span> <span class="p">{})</span>
     <span class="c1"># Positionals go after `--` so a name can never be read as an option by the tool.</span>
-    <span class="n">argv</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">argv</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span class="s2">"--"</span><span class="p">,</span> <span class="o">*</span><span class="n">positional</span><span class="p">)</span> <span class="k">if</span> <span class="n">positional</span> <span class="k">else</span> <span class="p">())</span>
+    <span class="n">argv</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">argv</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span class="s2">"--"</span><span class="p">,</span> <span class="o">*</span><span class="n">positional</span><span class="p">)</span> <span class="k">if</span> <span class="n">positional</span> <span class="k">else</span> <span class="p">())</span> <span class="o">+</span> <span class="n">rule</span><span class="o">.</span><span class="n">tail</span>
     <span class="k">return</span> <span class="n">Decision</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="s2">"allowed"</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">argv</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">stdin</span><span class="p">)</span></div>
 
 

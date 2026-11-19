@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=1fd71caa"></script>
+    <script src="../../_static/documentation_options.js?v=bbaf98b3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.6" />
+  <meta name="docsearch:version" content="0.0.7" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -884,6 +884,12 @@ window.runMermaid = runMermaid;</script>
         <span class="n">dispatch_roots</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">dispatch_roots</span><span class="p">,</span>
         <span class="n">roots</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">all_roots</span><span class="p">(),</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="n">decision</span><span class="o">.</span><span class="n">rule</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">decision</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
+        <span class="c1"># a rule whose text goes to stdin: that text is the agent's content, never logged,</span>
+        <span class="c1"># allowed or refused</span>
+        <span class="n">record</span><span class="p">[</span><span class="s2">"request"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">decision</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">match</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">" [text withheld: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars]"</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">decision</span><span class="o">.</span><span class="n">allowed</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"hatchway: refused: </span><span class="si">{</span><span class="n">decision</span><span class="o">.</span><span class="n">reason</span><span class="si">}</span><span class="s2">. Send 'help' for what is allowed.</span><span class="se">\n</span><span class="s2">"</span>

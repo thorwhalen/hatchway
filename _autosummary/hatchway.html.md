@@ -58,7 +58,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='')
+### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='', tail=())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -75,6 +75,8 @@ whose value is written to the command’s standard input instead of its argument
 so a body of text (a note to publish) never lands in `argv`. `reply` shapes a
 successful answer for those transports: a template whose only field is `{out}`, the
 command’s output stripped (a published link turned into a line to paste elsewhere).
+`tail` is fixed words placed after the request’s arguments (`-`, for a command
+that reads its text from standard input only in that position).
 
 ### *class* hatchway.Settings(profile='claude-fleet', path=list(), timeout=120, roots=dict(), dispatch_roots=list(), snapshot_to='', config_dir=config_dir(), data_dir=data_dir())
 

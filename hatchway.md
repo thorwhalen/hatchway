@@ -1,4 +1,4 @@
-> built 2026-11-19 09:11 UTC from 5055e16 (main) · hatchway 0.0.6. Details: build_info.json
+> built 2026-11-19 09:33 UTC from 3af1db4 (main) · hatchway 0.0.7. Details: build_info.json
 
 # index.html.md
 
@@ -231,7 +231,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](_autosummary/hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='')
+### *class* hatchway.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='', tail=())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -248,6 +248,8 @@ whose value is written to the command’s standard input instead of its argument
 so a body of text (a note to publish) never lands in `argv`. `reply` shapes a
 successful answer for those transports: a template whose only field is `{out}`, the
 command’s output stripped (a published link turned into a line to paste elsewhere).
+`tail` is fixed words placed after the request’s arguments (`-`, for a command
+that reads its text from standard input only in that position).
 
 ### *class* hatchway.Settings(profile='claude-fleet', path=list(), timeout=120, roots=dict(), dispatch_roots=list(), snapshot_to='', config_dir=config_dir(), data_dir=data_dir())
 
@@ -767,7 +769,7 @@ The rule with the longest `match` that prefixes `tokens`.
 * **Return type:**
   [`Rule`](_autosummary/hatchway.policy.html.md#hatchway.policy.Rule) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='')
+### *class* hatchway.policy.Rule(match, argv=(), kind='exec', klass='read', flags=frozenset({}), value_flags=(), max_positional=0, min_positional=0, positional_pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', root='', help='', tool='', arg='', param='', stdin='', reply='', tail=())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -784,6 +786,8 @@ whose value is written to the command’s standard input instead of its argument
 so a body of text (a note to publish) never lands in `argv`. `reply` shapes a
 successful answer for those transports: a template whose only field is `{out}`, the
 command’s output stripped (a published link turned into a line to paste elsewhere).
+`tail` is fixed words placed after the request’s arguments (`-`, for a command
+that reads its text from standard input only in that position).
 
 ### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False)
 
@@ -824,7 +828,7 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-19 09:11 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3"><code>5055e16</code></a> on branch <code>main</code>, for **hatchway 0.0.6** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-19 09:33 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/3af1db4ade11836aaec46c881f6b164165209a0b"><code>3af1db4</code></a> on branch <code>main</code>, for **hatchway 0.0.7** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -833,7 +837,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3"><code>5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/3af1db4ade11836aaec46c881f6b164165209a0b"><code>3af1db4ade11836aaec46c881f6b164165209a0b</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -844,9 +848,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44493970698">44493970698</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44497373420">44497373420</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3</code> (in the history of the built commit) |
+| Event commit | <code>3af1db4ade11836aaec46c881f6b164165209a0b</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -871,13 +875,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.6/">0.0.6</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.7/">0.0.7</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout 5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3
+git checkout 3af1db4ade11836aaec46c881f6b164165209a0b
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

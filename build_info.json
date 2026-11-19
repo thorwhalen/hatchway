@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-19T09:11:55Z",
+  "built_at": "2026-11-19T09:33:48Z",
   "package": {
     "name": "hatchway",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "display_name": "hatchway",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3",
-    "short_commit": "5055e16",
+    "commit": "3af1db4ade11836aaec46c881f6b164165209a0b",
+    "short_commit": "3af1db4",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/hatchway",
-    "commit_url": "https://github.com/thorwhalen/hatchway/commit/5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3",
+    "commit_url": "https://github.com/thorwhalen/hatchway/commit/3af1db4ade11836aaec46c881f6b164165209a0b",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/hatchway",
-    "sha": "5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3",
+    "sha": "3af1db4ade11836aaec46c881f6b164165209a0b",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "44493970698",
-    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44493970698",
+    "run_id": "44497373420",
+    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44497373420",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -60,11 +60,11 @@
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.6",
+    "latest": "0.0.7",
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 5055e168051e1f6bbcc9b9f5c8c3eba39fed20f3\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 3af1db4ade11836aaec46c881f6b164165209a0b\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,
