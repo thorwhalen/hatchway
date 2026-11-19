@@ -388,3 +388,33 @@ def test_a_text_for_stdin_is_never_logged_even_when_refused(tmp_path, monkeypatc
     logged = "".join(p.read_text() for p in tmp_path.rglob("*.jsonl"))
     assert logged and "SECRET BODY" not in logged and "text withheld" in logged
     assert all(_json.loads(line)["decision"] == "refused" for line in logged.splitlines())
+
+
+def test_bundled_annals_reads_take_a_link_or_an_id_and_nothing_else():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    doc = "20261119-075018-the-swatch-app-a-map-2026-11-19-4a58"
+    for verb in ("aggregate", "show"):
+        ok = [
+            doc,
+            f"https://annals.apps.example.io/annals/d/{doc}",
+            f"https://apps.example.com/annals/g/{doc}?f=map.md",
+            f"https://apps.example.com/annals/d/{doc}@2",
+        ]
+        for ref in ok:
+            d = decide(f"annals {verb} {shlex.quote(ref)}", p, flags_present=set())
+            assert d.allowed, (verb, ref, d.reason)
+            assert d.argv == ("annals", verb, "--", ref)  # never read as an option
+        refused = [
+            f"https://a.example.com/annals/d/../g/{doc}",
+            f"https://user@a.example.com/annals/d/{doc}",
+            f"http://a.example.com/annals/d/{doc}",
+            f"https://a.example.com/annals/raw/{doc}/map.md",
+            "../etc/passwd",
+            f"{doc} --to other",
+            f"{doc} --format pdf --output /tmp/x.pdf",
+        ]
+        for ref in refused:
+            assert not decide(f"annals {verb} {ref}", p, flags_present=set()).allowed, ref

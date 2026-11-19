@@ -19,7 +19,9 @@ list_issues, read_handoffs) and only then read in depth (read_repo_file, read_is
 session_turns). Long answers come in pages: the answer says which offset to ask for next. \
 Summarise what comes back in a few spoken sentences unless asked for detail. A \
 'refused:' answer means the request is outside what this connector allows; say so, do \
-not retry with variations. post_handoff writes a note Claude Code will read: use it \
+not retry with variations. An annals link (.../annals/d/... or .../annals/g/...) is \
+private: never fetch it, read it with read_document (and document_info for its files and \
+the documents it links to). post_handoff writes a note Claude Code will read: use it \
 when the owner asks to pass something on, and read the title and body back first. \
 create_issue and comment_issue write to GitHub: read the title and text back first; a \
 'needs_approval' or 'held' answer means the publication check kept it for the owner, so \
@@ -192,6 +194,11 @@ value_flags = [
 ]
 help = "Handoff notes, newest first (since: 6h, 2d or a date). Read one with read_document."
 
+# An annals link names its own annals: the machine's annals config matches its host against
+# the places it can read (the owner's annals and any [targets.NAME]), so one rule serves
+# every annals the machine is configured for, and the pattern names no host. Only https
+# links to a document (/d/<id>) or a group (/g/<id>), or a bare id; never '..' or userinfo.
+
 [[rule]]
 match = ["annals", "aggregate"]
 tool = "read_document"
@@ -199,9 +206,20 @@ param = "document"
 argv = ["annals", "aggregate"]
 min_positional = 1
 max_positional = 1
-positional_pattern = "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
-arg = "a document's id, as read_handoffs shows it"
-help = "The text of one published document (a handoff note, a report)."
+positional_pattern = "(?!.*\\.\\.)(?:[A-Za-z0-9][A-Za-z0-9_-]{0,127}|https://[A-Za-z0-9.-]{1,253}(?::[0-9]{1,5})?(?:/[A-Za-z0-9_.-]{1,64}){0,6}/[dg]/[A-Za-z0-9][A-Za-z0-9_-]{0,127}/?)(?:@[0-9]{1,4})?(?:[?#][A-Za-z0-9_.=&/+-]{0,200})?"
+arg = "an annals link (.../annals/d/<id> or .../annals/g/<id>) exactly as you were handed it, or an id from read_handoffs"
+help = "The text of an annals document, or of every document in a group (a handoff note, a report). Attached text and PDF files are included; images are named, not shown."
+
+[[rule]]
+match = ["annals", "show"]
+tool = "document_info"
+param = "document"
+argv = ["annals", "show"]
+min_positional = 1
+max_positional = 1
+positional_pattern = "(?!.*\\.\\.)(?:[A-Za-z0-9][A-Za-z0-9_-]{0,127}|https://[A-Za-z0-9.-]{1,253}(?::[0-9]{1,5})?(?:/[A-Za-z0-9_.-]{1,64}){0,6}/[dg]/[A-Za-z0-9][A-Za-z0-9_-]{0,127}/?)(?:@[0-9]{1,4})?(?:[?#][A-Za-z0-9_.=&/+-]{0,200})?"
+arg = "an annals link (.../annals/d/<id> or .../annals/g/<id>), or an id"
+help = "An annals document's details: its files, tags, the groups it is in, and links (the other annals documents and groups it links to; read them with read_document). A group's link lists its documents."
 
 [[rule]]
 match = ["annals", "publish", "handoff"]
