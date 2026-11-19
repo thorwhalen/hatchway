@@ -208,6 +208,19 @@ Line to paste into Claude Code:
 Read the handoff {out} with `annals aggregate {out}` and act on it."""
 help = "Leave a note for Claude Code: title and markdown text, up to about 7000 characters (decisions, next steps, links). Returns the line to paste into Claude Code."
 
+# --- console intents: what became of one (read-only; queueing one is never offered here) --
+
+[[rule]]
+match = ["crowsnest", "intent", "status"]
+tool = "intent_status"
+param = "intent"
+argv = ["crowsnest", "intent", "status"]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[0-9]{8}T[0-9]{6}Z-[0-9a-f]{8}|key-[0-9a-f]{32}"
+arg = "the intent's id"
+help = "Whether a message queued for a session was picked up: queued, handed, done or failed, with its one-line answer."
+
 # --- work requests: a job on an issue, confirmed by the owner in person ----------------
 
 [[rule]]

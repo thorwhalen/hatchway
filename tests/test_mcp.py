@@ -328,3 +328,20 @@ def test_bundled_work_request_is_gated_and_narrow():
     ).allowed
     assert decide("equerry-desk request-status 0123456789ab", p, flags_present=set()).allowed
     assert not decide("equerry-desk request-status ../../x", p, flags_present=set()).allowed
+
+
+def test_intent_status_is_read_only_and_routed_alone():
+    from hatchway.config import load_profile
+    from hatchway.mcp import fan_out, routed_runner
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    ok = "crowsnest intent status 20261119T084800Z-0123abcd"
+    assert decide(ok, p, flags_present=set()).allowed
+    assert not decide("crowsnest intent put tell x", p, flags_present=set()).allowed
+    every = fan_out({"a": lambda r: Result(0, "a\n", ""), "b": lambda r: Result(0, "b\n", "")})
+    run = routed_runner(
+        lambda r: Result(0, "server", ""),
+        {"crowsnest": every, "crowsnest intent": lambda r: Result(0, "one", "")},
+    )
+    assert run(ok).out == "one" and run("crowsnest roster").out == "[a] a\n[b] b\n"
