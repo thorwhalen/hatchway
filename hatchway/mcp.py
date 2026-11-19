@@ -213,7 +213,17 @@ def _why_not(result: Result, *, is_down: Callable[[Result], bool]) -> str:
         return f"did not answer{why}"
     if result.status == REFUSED:
         return f"refused{why}"
+    if result.status == BUSY:
+        return f"busy{why}"
     return f"failed, exit {result.status}{why}"
+
+
+#: how long one machine of a :func:`fan_out` may take before it is named as not answering
+DFLT_FAN_OUT_DEADLINE = 25.0
+#: how long a merged answer is reused for the same request, so its pages hold still
+DFLT_FAN_OUT_TTL = 30.0
+#: the exit status of a part that missed its deadline (the far side may still be running)
+LATE = 124
 
 
 def fan_out(
@@ -221,19 +231,26 @@ def fan_out(
     *,
     label: Callable[[str, str], str] = tag_lines,
     is_down: Callable[[Result], bool] = unreachable,
+    deadline: float = DFLT_FAN_OUT_DEADLINE,
+    ttl: float = DFLT_FAN_OUT_TTL,
+    clock: Callable[[], float] = time.monotonic,
 ) -> Runner:
     """Ask every runner at once and merge their answers, each part labelled with its name.
 
     Where :func:`with_fallback` asks a second machine only when the first is down,
     ``fan_out`` asks all of them, for questions every machine answers about itself (its
     own sessions). The parts come back in the order of ``runners``, each through
-    ``label`` (default :func:`tag_lines`). A part that could not be reached, was refused
-    or failed does not fail the call: it is named on a line of its own at the end, so the
-    reader knows whose answer is missing rather than reading a partial list as whole. A
-    part that answered with nothing is named too.
+    ``label`` (default :func:`tag_lines`). A part that could not be reached, was refused,
+    was busy, failed, or took longer than ``deadline`` seconds does not fail the call: it
+    is named on a line of its own at the end, so the reader knows whose answer is missing
+    rather than reading a partial list as whole. A part that answered nothing is named too.
 
-    The call fails only when no part answered: then the status is the first part's
-    (a refusal everywhere stays a refusal) and the error names every part.
+    The call fails only when no part answered: then the status is a refusal if any part
+    refused, else the first part's that reached its machine, and the error names every part.
+
+    The merged answer is reused for ``ttl`` seconds for the same request, so a long answer
+    read page by page (``offset``) does not shift under the reader. ``ttl=0`` turns it off.
+    Only use ``fan_out`` for reads: a request that changes something must go to one runner.
 
     >>> up = lambda r: Result(0, "busy  a\\n", "")
     >>> down = lambda r: Result(UNREACHABLE, "", "ssh: connect to host x: Operation timed out")
@@ -241,7 +258,11 @@ def fan_out(
     [tw] busy  a
     [mac] (did not answer: ssh: connect to host x: Operation timed out)
     """
+    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import wait as _wait
+
     names = list(runners)
+    cache: dict[str, tuple[float, Result]] = {}
 
     def ask(name: str, request: str) -> Result:
         try:
@@ -249,11 +270,17 @@ def fan_out(
         except Exception as e:  # noqa: BLE001 -- a broken part is a missing part, not a failed call
             return Result(1, "", f"{type(e).__name__}: {e}")
 
-    def run(request: str) -> Result:
-        from concurrent.futures import ThreadPoolExecutor
+    def gather(request: str) -> list[Result]:
+        pool = ThreadPoolExecutor(max_workers=max(len(names), 1))
+        futures = [pool.submit(ask, n, request) for n in names]
+        _wait(futures, timeout=deadline)
+        pool.shutdown(wait=False, cancel_futures=True)  # a late part is not waited for
+        return [
+            f.result() if f.done() else Result(LATE, "", f"no answer within {deadline:.0f}s")
+            for f in futures
+        ]
 
-        with ThreadPoolExecutor(max_workers=max(len(names), 1)) as pool:
-            results = list(pool.map(lambda n: ask(n, request), names))
+    def merge(results: list[Result]) -> Result:
         parts, missing = [], []
         for name, result in zip(names, results):
             if result.status != 0:
@@ -262,9 +289,23 @@ def fan_out(
                 parts.append(label(name, result.out))
             else:
                 missing.append(f"[{name}] (nothing)\n")
-        if parts or any(r.status == 0 for r in results):
+        if any(r.status == 0 for r in results):
             return Result(0, "".join(parts + missing), "")
-        return Result(results[0].status if results else 1, "", "".join(missing))
+        statuses = [r.status for r in results if not is_down(r)] or [r.status for r in results]
+        status = REFUSED if REFUSED in statuses else (statuses[0] if statuses else 1)
+        return Result(status, "", "".join(missing))
+
+    def run(request: str) -> Result:
+        now = clock()
+        hit = cache.get(request)
+        if hit and now - hit[0] < ttl:
+            return hit[1]
+        result = merge(gather(request))
+        if ttl > 0:
+            for k in [k for k, (t, _) in cache.items() if now - t >= ttl]:
+                cache.pop(k, None)
+            cache[request] = (now, result)
+        return result
 
     return run
 
