@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=47de8214"></script>
+    <script src="../_static/documentation_options.js?v=8c5712d9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.3" />
+  <meta name="docsearch:version" content="0.0.4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -431,29 +431,44 @@ holding any of their credentials. Building the server needs <code class="docutil
 <tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.BUSY" title="hatchway.mcp.BUSY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BUSY</span></code></a></p></td>
 <td><p>the gate's exit statuses a runner may see</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.DFLT_FAN_OUT_DEADLINE" title="hatchway.mcp.DFLT_FAN_OUT_DEADLINE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_FAN_OUT_DEADLINE</span></code></a></p></td>
+<td><p>how long one machine of a <a class="reference internal" href="#hatchway.mcp.fan_out" title="hatchway.mcp.fan_out"><code class="xref py py-func docutils literal notranslate"><span class="pre">fan_out()</span></code></a> may take before it is named as not answering</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.DFLT_FAN_OUT_TTL" title="hatchway.mcp.DFLT_FAN_OUT_TTL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_FAN_OUT_TTL</span></code></a></p></td>
+<td><p>how long a merged answer is reused for the same request, so its pages hold still</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.LATE" title="hatchway.mcp.LATE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LATE</span></code></a></p></td>
+<td><p>the exit status of a part that missed its deadline (the far side may still be running)</p></td>
+</tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.local_runner" title="hatchway.mcp.local_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_runner</span></code></a>(*[, agent, profile, timeout, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.fan_out" title="hatchway.mcp.fan_out"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fan_out</span></code></a>(runners, *[, label, is_down, ...])</p></td>
+<td><p>Ask every runner at once and merge their answers, each part labelled with its name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.local_runner" title="hatchway.mcp.local_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_runner</span></code></a>(*[, agent, profile, timeout, ...])</p></td>
 <td><p>Run each request through <code class="docutils literal notranslate"><span class="pre">hatchway</span> <span class="pre">gate</span></code> on this machine, as this user.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.mk_server" title="hatchway.mcp.mk_server"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_server</span></code></a>([profile, runner, settings, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.mk_server" title="hatchway.mcp.mk_server"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_server</span></code></a>([profile, runner, settings, ...])</p></td>
 <td><p>A <code class="docutils literal notranslate"><span class="pre">FastMCP</span></code> server over <code class="docutils literal notranslate"><span class="pre">profile</span></code>'s rules.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.mk_tool" title="hatchway.mcp.mk_tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tool</span></code></a>(rule, *, runner[, max_chars])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.mk_tool" title="hatchway.mcp.mk_tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tool</span></code></a>(rule, *, runner[, max_chars])</p></td>
 <td><p>One callable for <code class="docutils literal notranslate"><span class="pre">rule</span></code>, with a real signature, so any MCP host can type it.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.mk_tools" title="hatchway.mcp.mk_tools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tools</span></code></a>(profile, *, runner[, classes, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.mk_tools" title="hatchway.mcp.mk_tools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tools</span></code></a>(profile, *, runner[, classes, ...])</p></td>
 <td><p>The tools for every rule of <code class="docutils literal notranslate"><span class="pre">profile</span></code> in one of <code class="docutils literal notranslate"><span class="pre">classes</span></code>, in profile order.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.routed_runner" title="hatchway.mcp.routed_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">routed_runner</span></code></a>(default, routes)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.routed_runner" title="hatchway.mcp.routed_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">routed_runner</span></code></a>(default, routes)</p></td>
 <td><p>Send a request to the runner its first word names in <code class="docutils literal notranslate"><span class="pre">routes</span></code>, else <code class="docutils literal notranslate"><span class="pre">default</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.ssh_runner" title="hatchway.mcp.ssh_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ssh_runner</span></code></a>(destination, *[, identity, ssh, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.ssh_runner" title="hatchway.mcp.ssh_runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ssh_runner</span></code></a>(destination, *[, identity, ssh, ...])</p></td>
 <td><p>Send each request over SSH to <code class="docutils literal notranslate"><span class="pre">destination</span></code>, whose key's forced command is the gate.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.tag_lines" title="hatchway.mcp.tag_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tag_lines</span></code></a>(name, text)</p></td>
+<td><p>Every non-blank line of <code class="docutils literal notranslate"><span class="pre">text</span></code> prefixed with <code class="docutils literal notranslate"><span class="pre">[name]</span></code>, so merged rows say whose they are.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.tool_name" title="hatchway.mcp.tool_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tool_name</span></code></a>(rule)</p></td>
 <td><p>The MCP name of a rule: its <code class="docutils literal notranslate"><span class="pre">tool</span></code> key, else its words joined by underscores.</p></td>
@@ -494,9 +509,27 @@ holding any of their credentials. Building the server needs <code class="docutil
 </dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="hatchway.mcp.DFLT_FAN_OUT_DEADLINE">
+<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">DFLT_FAN_OUT_DEADLINE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25.0</span></span><a class="headerlink" href="#hatchway.mcp.DFLT_FAN_OUT_DEADLINE" title="Link to this definition">#</a></dt>
+<dd><p>how long one machine of a <a class="reference internal" href="#hatchway.mcp.fan_out" title="hatchway.mcp.fan_out"><code class="xref py py-func docutils literal notranslate"><span class="pre">fan_out()</span></code></a> may take before it is named as not answering</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hatchway.mcp.DFLT_FAN_OUT_TTL">
+<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">DFLT_FAN_OUT_TTL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">30.0</span></span><a class="headerlink" href="#hatchway.mcp.DFLT_FAN_OUT_TTL" title="Link to this definition">#</a></dt>
+<dd><p>how long a merged answer is reused for the same request, so its pages hold still</p>
+</dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="hatchway.mcp.DFLT_MAX_CHARS">
 <span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">DFLT_MAX_CHARS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6000</span></span><a class="headerlink" href="#hatchway.mcp.DFLT_MAX_CHARS" title="Link to this definition">#</a></dt>
 <dd><p>how many characters of a command’s output one tool call returns; the rest is paged</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="hatchway.mcp.LATE">
+<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">LATE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">124</span></span><a class="headerlink" href="#hatchway.mcp.LATE" title="Link to this definition">#</a></dt>
+<dd><p>the exit status of a part that missed its deadline (the far side may still be running)</p>
 </dd></dl>
 
 <dl class="py data">
@@ -511,6 +544,36 @@ holding any of their credentials. Building the server needs <code class="docutil
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>What came back from the gate: its exit status, standard output and error.</p>
 <dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hatchway.mcp.fan_out">
+<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">fan_out</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runners</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">tag_lines&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_down</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">unreachable&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">monotonic&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hatchway/mcp.html#fan_out"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hatchway.mcp.fan_out" title="Link to this definition">#</a></dt>
+<dd><p>Ask every runner at once and merge their answers, each part labelled with its name.</p>
+<p>Where <a class="reference internal" href="#hatchway.mcp.with_fallback" title="hatchway.mcp.with_fallback"><code class="xref py py-func docutils literal notranslate"><span class="pre">with_fallback()</span></code></a> asks a second machine only when the first is down,
+<code class="docutils literal notranslate"><span class="pre">fan_out</span></code> asks all of them, for questions every machine answers about itself (its
+own sessions). The parts come back in the order of <code class="docutils literal notranslate"><span class="pre">runners</span></code>, each through
+<code class="docutils literal notranslate"><span class="pre">label</span></code> (default <a class="reference internal" href="#hatchway.mcp.tag_lines" title="hatchway.mcp.tag_lines"><code class="xref py py-func docutils literal notranslate"><span class="pre">tag_lines()</span></code></a>). A part that could not be reached, was refused,
+was busy, failed, or took longer than <code class="docutils literal notranslate"><span class="pre">deadline</span></code> seconds does not fail the call: it
+is named on a line of its own at the end, so the reader knows whose answer is missing
+rather than reading a partial list as whole. A part that answered nothing is named too.</p>
+<p>The call fails only when no part answered: then the status is a refusal if any part
+refused, else the first part’s that reached its machine, and the error names every part.</p>
+<p>The merged answer is reused for <code class="docutils literal notranslate"><span class="pre">ttl</span></code> seconds for the same request, so a long answer
+read page by page (<code class="docutils literal notranslate"><span class="pre">offset</span></code>) does not shift under the reader. <code class="docutils literal notranslate"><span class="pre">ttl=0</span></code> turns it off.
+Only use <code class="docutils literal notranslate"><span class="pre">fan_out</span></code> for reads: a request that changes something must go to one runner.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">up</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">Result</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"busy  a</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">down</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">Result</span><span class="p">(</span><span class="n">UNREACHABLE</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="s2">"ssh: connect to host x: Operation timed out"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fan_out</span><span class="p">({</span><span class="s2">"mac"</span><span class="p">:</span> <span class="n">down</span><span class="p">,</span> <span class="s2">"tw"</span><span class="p">:</span> <span class="n">up</span><span class="p">})(</span><span class="s2">"crowsnest roster"</span><span class="p">)</span><span class="o">.</span><span class="n">out</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
+<span class="go">[tw] busy  a</span>
+<span class="go">[mac] (did not answer: ssh: connect to host x: Operation timed out)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference internal" href="#hatchway.mcp.Result" title="hatchway.mcp.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a>]</span></p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -584,6 +647,23 @@ repositories from another: <code class="docutils literal notranslate"><span clas
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference internal" href="#hatchway.mcp.Result" title="hatchway.mcp.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hatchway.mcp.tag_lines">
+<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">tag_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hatchway/mcp.html#tag_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hatchway.mcp.tag_lines" title="Link to this definition">#</a></dt>
+<dd><p>Every non-blank line of <code class="docutils literal notranslate"><span class="pre">text</span></code> prefixed with <code class="docutils literal notranslate"><span class="pre">[name]</span></code>, so merged rows say whose they are.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tag_lines</span><span class="p">(</span><span class="s2">"tw"</span><span class="p">,</span> <span class="s2">"busy  a</span><span class="se">\n\n</span><span class="s2">idle  b"</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
+<span class="go">[tw] busy  a</span>
+
+<span class="go">[tw] idle  b</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -675,15 +755,20 @@ remote command that happened to exit 255.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.BUSY"><code class="docutils literal notranslate"><span class="pre">BUSY</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.DFLT_CLASSES"><code class="docutils literal notranslate"><span class="pre">DFLT_CLASSES</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.DFLT_FAN_OUT_DEADLINE"><code class="docutils literal notranslate"><span class="pre">DFLT_FAN_OUT_DEADLINE</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.DFLT_FAN_OUT_TTL"><code class="docutils literal notranslate"><span class="pre">DFLT_FAN_OUT_TTL</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.DFLT_MAX_CHARS"><code class="docutils literal notranslate"><span class="pre">DFLT_MAX_CHARS</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.LATE"><code class="docutils literal notranslate"><span class="pre">LATE</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.REFUSED"><code class="docutils literal notranslate"><span class="pre">REFUSED</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.Result"><code class="docutils literal notranslate"><span class="pre">Result</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.fan_out"><code class="docutils literal notranslate"><span class="pre">fan_out()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.local_runner"><code class="docutils literal notranslate"><span class="pre">local_runner()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.mk_server"><code class="docutils literal notranslate"><span class="pre">mk_server()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.mk_tool"><code class="docutils literal notranslate"><span class="pre">mk_tool()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.mk_tools"><code class="docutils literal notranslate"><span class="pre">mk_tools()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.routed_runner"><code class="docutils literal notranslate"><span class="pre">routed_runner()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.ssh_runner"><code class="docutils literal notranslate"><span class="pre">ssh_runner()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.tag_lines"><code class="docutils literal notranslate"><span class="pre">tag_lines()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.tool_name"><code class="docutils literal notranslate"><span class="pre">tool_name()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.unreachable"><code class="docutils literal notranslate"><span class="pre">unreachable()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.with_fallback"><code class="docutils literal notranslate"><span class="pre">with_fallback()</span></code></a></li>

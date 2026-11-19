@@ -1,4 +1,4 @@
-> built 2026-11-17 17:08 UTC from 69e332b (main) · hatchway 0.0.3. Details: build_info.json
+> built 2026-11-19 08:30 UTC from bbb8d42 (main) · hatchway 0.0.4. Details: build_info.json
 
 # index.html.md
 
@@ -59,8 +59,10 @@ hatchway mcp --profile claude-ai --ssh me@laptop --identity key   # each call th
 ```python
 from hatchway.mcp import mk_server, ssh_runner, routed_runner, with_fallback
 
-server = ssh_runner("root@127.0.0.1", identity="key")         # this machine, as another user
-laptop = ssh_runner("me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222"))  # through a tunnel
+server = ssh_runner("root@127.0.0.1", identity="key")  # this machine, as another user
+laptop = ssh_runner(
+    "me@127.0.0.1", identity="key", ssh=("ssh", "-T", "-p", "2222")
+)  # through a tunnel
 runner = routed_runner(server, {"crowsnest": with_fallback(laptop, server)})
 app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff")).http_app()
 ```
@@ -504,24 +506,29 @@ holding any of their credentials. Building the server needs `fastmcp`
 
 ### Module Attributes
 
-| [`DFLT_MAX_CHARS`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_MAX_CHARS)   | how many characters of a command's output one tool call returns; the rest is paged   |
-|-------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| [`DFLT_CLASSES`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_CLASSES)     | reading only                                                                         |
-| [`REFUSED`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.REFUSED)          | the gate's exit statuses a runner may see                                            |
-| [`BUSY`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.BUSY)             | the gate's exit statuses a runner may see                                            |
+| [`DFLT_MAX_CHARS`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_MAX_CHARS)        | how many characters of a command's output one tool call returns; the rest is paged                                                |
+|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| [`DFLT_CLASSES`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_CLASSES)          | reading only                                                                                                                      |
+| [`REFUSED`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.REFUSED)               | the gate's exit statuses a runner may see                                                                                         |
+| [`BUSY`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.BUSY)                  | the gate's exit statuses a runner may see                                                                                         |
+| [`DFLT_FAN_OUT_DEADLINE`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_FAN_OUT_DEADLINE) | how long one machine of a [`fan_out()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.fan_out) may take before it is named as not answering |
+| [`DFLT_FAN_OUT_TTL`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.DFLT_FAN_OUT_TTL)      | how long a merged answer is reused for the same request, so its pages hold still                                                  |
+| [`LATE`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.LATE)                  | the exit status of a part that missed its deadline (the far side may still be running)                                            |
 
 ### Functions
 
-| [`local_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.local_runner)(\*[, agent, profile, timeout, ...])   | Run each request through `hatchway gate` on this machine, as this user.              |
-|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| [`mk_server`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_server)([profile, runner, settings, ...])        | A `FastMCP` server over `profile`'s rules.                                           |
-| [`mk_tool`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_tool)(rule, \*, runner[, max_chars])             | One callable for `rule`, with a real signature, so any MCP host can type it.         |
-| [`mk_tools`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_tools)(profile, \*, runner[, classes, ...])      | The tools for every rule of `profile` in one of `classes`, in profile order.         |
-| [`routed_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.routed_runner)(default, routes)                     | Send a request to the runner its first word names in `routes`, else `default`.       |
-| [`ssh_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.ssh_runner)(destination, \*[, identity, ssh, ...])  | Send each request over SSH to `destination`, whose key's forced command is the gate. |
-| [`tool_name`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tool_name)(rule)                                    | The MCP name of a rule: its `tool` key, else its words joined by underscores.        |
-| [`unreachable`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.unreachable)(result)                                | Whether `result` is ssh failing to connect, as opposed to the far side answering.    |
-| [`with_fallback`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.with_fallback)(primary, fallback, \*[, note, ...])  | `primary`, unless it could not be reached; then `fallback`, with `note` first.       |
+| [`fan_out`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.fan_out)(runners, \*[, label, is_down, ...])       | Ask every runner at once and merge their answers, each part labelled with its name.       |
+|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| [`local_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.local_runner)(\*[, agent, profile, timeout, ...])  | Run each request through `hatchway gate` on this machine, as this user.                   |
+| [`mk_server`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_server)([profile, runner, settings, ...])       | A `FastMCP` server over `profile`'s rules.                                                |
+| [`mk_tool`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_tool)(rule, \*, runner[, max_chars])            | One callable for `rule`, with a real signature, so any MCP host can type it.              |
+| [`mk_tools`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.mk_tools)(profile, \*, runner[, classes, ...])     | The tools for every rule of `profile` in one of `classes`, in profile order.              |
+| [`routed_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.routed_runner)(default, routes)                    | Send a request to the runner its first word names in `routes`, else `default`.            |
+| [`ssh_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.ssh_runner)(destination, \*[, identity, ssh, ...]) | Send each request over SSH to `destination`, whose key's forced command is the gate.      |
+| [`tag_lines`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tag_lines)(name, text)                             | Every non-blank line of `text` prefixed with `[name]`, so merged rows say whose they are. |
+| [`tool_name`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tool_name)(rule)                                   | The MCP name of a rule: its `tool` key, else its words joined by underscores.             |
+| [`unreachable`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.unreachable)(result)                               | Whether `result` is ssh failing to connect, as opposed to the far side answering.         |
+| [`with_fallback`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.with_fallback)(primary, fallback, \*[, note, ...]) | `primary`, unless it could not be reached; then `fallback`, with `note` first.            |
 
 ### Classes
 
@@ -539,9 +546,21 @@ reading only
 * **Type:**
   the classes served by default
 
+### hatchway.mcp.DFLT_FAN_OUT_DEADLINE *= 25.0*
+
+how long one machine of a [`fan_out()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.fan_out) may take before it is named as not answering
+
+### hatchway.mcp.DFLT_FAN_OUT_TTL *= 30.0*
+
+how long a merged answer is reused for the same request, so its pages hold still
+
 ### hatchway.mcp.DFLT_MAX_CHARS *= 6000*
 
 how many characters of a command’s output one tool call returns; the rest is paged
+
+### hatchway.mcp.LATE *= 124*
+
+the exit status of a part that missed its deadline (the far side may still be running)
 
 ### hatchway.mcp.REFUSED *= 126*
 
@@ -552,6 +571,36 @@ the gate’s exit statuses a runner may see
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 What came back from the gate: its exit status, standard output and error.
+
+### hatchway.mcp.fan_out(runners, \*, label=<function tag_lines>, is_down=<function unreachable>, deadline=25.0, ttl=30.0, clock=<built-in function monotonic>)
+
+Ask every runner at once and merge their answers, each part labelled with its name.
+
+Where [`with_fallback()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.with_fallback) asks a second machine only when the first is down,
+`fan_out` asks all of them, for questions every machine answers about itself (its
+own sessions). The parts come back in the order of `runners`, each through
+`label` (default [`tag_lines()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tag_lines)). A part that could not be reached, was refused,
+was busy, failed, or took longer than `deadline` seconds does not fail the call: it
+is named on a line of its own at the end, so the reader knows whose answer is missing
+rather than reading a partial list as whole. A part that answered nothing is named too.
+
+The call fails only when no part answered: then the status is a refusal if any part
+refused, else the first part’s that reached its machine, and the error names every part.
+
+The merged answer is reused for `ttl` seconds for the same request, so a long answer
+read page by page (`offset`) does not shift under the reader. `ttl=0` turns it off.
+Only use `fan_out` for reads: a request that changes something must go to one runner.
+
+```pycon
+>>> up = lambda r: Result(0, "busy  a\n", "")
+>>> down = lambda r: Result(UNREACHABLE, "", "ssh: connect to host x: Operation timed out")
+>>> print(fan_out({"mac": down, "tw": up})("crowsnest roster").out, end="")
+[tw] busy  a
+[mac] (did not answer: ssh: connect to host x: Operation timed out)
+```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)]
 
 ### hatchway.mcp.local_runner(, agent='mcp', profile=None, timeout=150, busy_retries=6)
 
@@ -607,6 +656,20 @@ The request travels as the remote command, which sshd hands to the forced comman
 
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)]
+
+### hatchway.mcp.tag_lines(name, text)
+
+Every non-blank line of `text` prefixed with `[name]`, so merged rows say whose they are.
+
+```pycon
+>>> print(tag_lines("tw", "busy  a\n\nidle  b"), end="")
+[tw] busy  a
+
+[tw] idle  b
+```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### hatchway.mcp.tool_name(rule)
 
@@ -747,16 +810,18 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-17 17:08 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155"><code>69e332b</code></a> on branch <code>main</code>, for **hatchway 0.0.3** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-19 08:30 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa"><code>bbb8d42</code></a> on branch <code>main</code>, for **hatchway 0.0.4** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.4) is behind the latest release on PyPI (0.0.5): `pip install hatchway` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/69e332beea5d7822e029746e201026c228092155"><code>69e332beea5d7822e029746e201026c228092155</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa"><code>bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -767,9 +832,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44133413787">44133413787</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44487949404">44487949404</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>69e332beea5d7822e029746e201026c228092155</code> (in the history of the built commit) |
+| Event commit | <code>bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -794,13 +859,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.3/">0.0.3</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.5/">0.0.5</a>, newer than the documented version (0.0.4).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout 69e332beea5d7822e029746e201026c228092155
+git checkout bbb8d42ffd8770ef4ac6c1dfc7dbbb8323e561fa
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

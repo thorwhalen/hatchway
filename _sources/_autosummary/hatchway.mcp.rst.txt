@@ -12,17 +12,22 @@ hatchway.mcp
       DFLT_CLASSES
       REFUSED
       BUSY
+      DFLT_FAN_OUT_DEADLINE
+      DFLT_FAN_OUT_TTL
+      LATE
    
    .. rubric:: Functions
 
    .. autosummary::
    
+      fan_out
       local_runner
       mk_server
       mk_tool
       mk_tools
       routed_runner
       ssh_runner
+      tag_lines
       tool_name
       unreachable
       with_fallback

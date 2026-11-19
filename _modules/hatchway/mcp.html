@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=47de8214"></script>
+    <script src="../../_static/documentation_options.js?v=8c5712d9"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.3" />
+  <meta name="docsearch:version" content="0.0.4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -916,6 +916,133 @@ window.runMermaid = runMermaid;</script>
             <span class="k">return</span> <span class="n">result</span>
         <span class="n">second</span> <span class="o">=</span> <span class="n">fallback</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="n">second</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">note</span> <span class="o">+</span> <span class="n">second</span><span class="o">.</span><span class="n">out</span><span class="p">,</span> <span class="n">second</span><span class="o">.</span><span class="n">err</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">run</span></div>
+
+
+
+<div class="viewcode-block" id="tag_lines">
+<a class="viewcode-back" href="../../_autosummary/hatchway.mcp.html#hatchway.mcp.tag_lines">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tag_lines</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Every non-blank line of ``text`` prefixed with ``[name]``, so merged rows say whose they are.</span>
+
+<span class="sd">    &gt;&gt;&gt; print(tag_lines("tw", "busy  a\\n\\nidle  b"), end="")</span>
+<span class="sd">    [tw] busy  a</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    [tw] idle  b</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_why_not</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">Result</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">is_down</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Result</span><span class="p">],</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""One line saying why a part gave no answer, for the footer of a merged reply.</span>
+
+<span class="sd">    The last line of what it said: ssh puts its warnings first and its verdict last.</span>
+<span class="sd">    """</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">err</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="n">why</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">": </span><span class="si">{</span><span class="n">lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">200</span><span class="p">:]</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">lines</span> <span class="k">else</span> <span class="s2">""</span>
+    <span class="k">if</span> <span class="n">is_down</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"did not answer</span><span class="si">{</span><span class="n">why</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">REFUSED</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"refused</span><span class="si">{</span><span class="n">why</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">BUSY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"busy</span><span class="si">{</span><span class="n">why</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"failed, exit </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="si">}{</span><span class="n">why</span><span class="si">}</span><span class="s2">"</span>
+
+
+<span class="c1">#: how long one machine of a :func:`fan_out` may take before it is named as not answering</span>
+<span class="n">DFLT_FAN_OUT_DEADLINE</span> <span class="o">=</span> <span class="mf">25.0</span>
+<span class="c1">#: how long a merged answer is reused for the same request, so its pages hold still</span>
+<span class="n">DFLT_FAN_OUT_TTL</span> <span class="o">=</span> <span class="mf">30.0</span>
+<span class="c1">#: the exit status of a part that missed its deadline (the far side may still be running)</span>
+<span class="n">LATE</span> <span class="o">=</span> <span class="mi">124</span>
+
+
+<div class="viewcode-block" id="fan_out">
+<a class="viewcode-back" href="../../_autosummary/hatchway.mcp.html#hatchway.mcp.fan_out">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fan_out</span><span class="p">(</span>
+    <span class="n">runners</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Runner</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_lines</span><span class="p">,</span>
+    <span class="n">is_down</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Result</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">unreachable</span><span class="p">,</span>
+    <span class="n">deadline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_FAN_OUT_DEADLINE</span><span class="p">,</span>
+    <span class="n">ttl</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_FAN_OUT_TTL</span><span class="p">,</span>
+    <span class="n">clock</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Runner</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Ask every runner at once and merge their answers, each part labelled with its name.</span>
+
+<span class="sd">    Where :func:`with_fallback` asks a second machine only when the first is down,</span>
+<span class="sd">    ``fan_out`` asks all of them, for questions every machine answers about itself (its</span>
+<span class="sd">    own sessions). The parts come back in the order of ``runners``, each through</span>
+<span class="sd">    ``label`` (default :func:`tag_lines`). A part that could not be reached, was refused,</span>
+<span class="sd">    was busy, failed, or took longer than ``deadline`` seconds does not fail the call: it</span>
+<span class="sd">    is named on a line of its own at the end, so the reader knows whose answer is missing</span>
+<span class="sd">    rather than reading a partial list as whole. A part that answered nothing is named too.</span>
+
+<span class="sd">    The call fails only when no part answered: then the status is a refusal if any part</span>
+<span class="sd">    refused, else the first part's that reached its machine, and the error names every part.</span>
+
+<span class="sd">    The merged answer is reused for ``ttl`` seconds for the same request, so a long answer</span>
+<span class="sd">    read page by page (``offset``) does not shift under the reader. ``ttl=0`` turns it off.</span>
+<span class="sd">    Only use ``fan_out`` for reads: a request that changes something must go to one runner.</span>
+
+<span class="sd">    &gt;&gt;&gt; up = lambda r: Result(0, "busy  a\\n", "")</span>
+<span class="sd">    &gt;&gt;&gt; down = lambda r: Result(UNREACHABLE, "", "ssh: connect to host x: Operation timed out")</span>
+<span class="sd">    &gt;&gt;&gt; print(fan_out({"mac": down, "tw": up})("crowsnest roster").out, end="")</span>
+<span class="sd">    [tw] busy  a</span>
+<span class="sd">    [mac] (did not answer: ssh: connect to host x: Operation timed out)</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">wait</span> <span class="k">as</span> <span class="n">_wait</span>
+
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">runners</span><span class="p">)</span>
+    <span class="n">cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Result</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">ask</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">runners</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 -- a broken part is a missing part, not a failed call</span>
+            <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">gather</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Result</span><span class="p">]:</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">ask</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+        <span class="n">_wait</span><span class="p">(</span><span class="n">futures</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">deadline</span><span class="p">)</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cancel_futures</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># a late part is not waited for</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">result</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">done</span><span class="p">()</span> <span class="k">else</span> <span class="n">Result</span><span class="p">(</span><span class="n">LATE</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"no answer within </span><span class="si">{</span><span class="n">deadline</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">futures</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Result</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+        <span class="n">parts</span><span class="p">,</span> <span class="n">missing</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">missing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] (</span><span class="si">{</span><span class="n">_why_not</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">is_down</span><span class="o">=</span><span class="n">is_down</span><span class="p">)</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">out</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">missing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] (nothing)</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span> <span class="o">+</span> <span class="n">missing</span><span class="p">),</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">statuses</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">status</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">is_down</span><span class="p">(</span><span class="n">r</span><span class="p">)]</span> <span class="ow">or</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">status</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">REFUSED</span> <span class="k">if</span> <span class="n">REFUSED</span> <span class="ow">in</span> <span class="n">statuses</span> <span class="k">else</span> <span class="p">(</span><span class="n">statuses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">statuses</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">clock</span><span class="p">()</span>
+        <span class="n">hit</span> <span class="o">=</span> <span class="n">cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hit</span> <span class="ow">and</span> <span class="n">now</span> <span class="o">-</span> <span class="n">hit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">ttl</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">hit</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span><span class="n">gather</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">ttl</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cache</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">now</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="n">ttl</span><span class="p">]:</span>
+                <span class="n">cache</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">cache</span><span class="p">[</span><span class="n">request</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">now</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">return</span> <span class="n">run</span></div>
 
