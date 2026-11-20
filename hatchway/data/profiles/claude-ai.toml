@@ -140,15 +140,17 @@ help = "Work that is blocked on another repository, and work whose blockers all 
 # --- reminders (openloops loops) ---------------------------------------------------------
 # A reminder is a loop with a time: `ol remind` saves it and schedules a push to the
 # owner's phone at that time, which fires even if the machine sleeps. The title is never
-# revealed in the push (no --reveal). The connector routes these to the machine that keeps
-# the loops.
+# revealed in the push (no --reveal). Pinned guards: at most 20 reminders a day from here,
+# and close/snooze reach only the reminders set from here (snooze at most 14 days ahead).
+# list_reminders is a read, like the rest of the read class: it shows every loop's title.
+# The connector routes these to the machine that keeps the loops.
 
 [[rule]]
 match = ["ol", "remind"]
 tool = "add_reminder"
 class = "reminder"
 param = "title"
-argv = ["ol", "remind", "--source", "claude-ai"]
+argv = ["ol", "remind", "--source", "claude-ai", "--daily-cap", "20"]
 value_flags = [
   { names = ["--when", "-w"], pattern = "[0-9]{1,3}[mhd](?:[0-9]{1,2}m)?|[0-9]{1,2}:[0-9]{2}|[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2})?" },
 ]
@@ -170,24 +172,24 @@ match = ["ol", "done"]
 tool = "close_reminder"
 class = "reminder"
 param = "reminder"
-argv = ["ol", "done", "--note", "closed from claude.ai"]
+argv = ["ol", "done", "--only-source", "claude-ai", "--note", "closed from claude.ai"]
 min_positional = 1
 max_positional = 1
 positional_pattern = "(?:loop-)?[0-9]{8}-[0-9a-f]{1,8}"
 arg = "the reminder's id as list_reminders shows it (loop-YYYYMMDD-xxxxxx)"
-help = "Close a reminder as done; its push is cancelled (one already scheduled may still arrive: say so)."
+help = "Close a reminder set from claude.ai as done; its push is cancelled (one already scheduled may still arrive: say so). Reminders set elsewhere are closed at the Mac."
 
 [[rule]]
 match = ["ol", "snooze"]
 tool = "snooze_reminder"
 class = "reminder"
 param = "reminder_and_when"
-argv = ["ol", "snooze"]
+argv = ["ol", "snooze", "--only-source", "claude-ai", "--max-days", "14"]
 min_positional = 2
 max_positional = 2
 positional_pattern = "(?:loop-)?[0-9]{8}-[0-9a-f]{1,8}|[0-9]{1,3}[mhd](?:[0-9]{1,2}m)?|[0-9]{1,2}:[0-9]{2}|[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2})?"
 arg = "the reminder's id, then the new time (20m, 3h, 15:30, 2026-11-21T09:00)"
-help = "Move a reminder to a new time. Read back the line it prints."
+help = "Move a reminder set from claude.ai to a new time, at most 14 days ahead. Read back the line it prints."
 
 # --- GitHub repositories (gh, read only) -----------------------------------------------
 # Repository names are checked against a pattern that refuses '..' and any repository

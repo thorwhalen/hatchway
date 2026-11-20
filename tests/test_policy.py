@@ -270,3 +270,7 @@ def test_claude_ai_reminders_are_gated_never_revealed_and_take_a_spoken_title():
     assert not decide("ol done ../x", p, flags_present=on).allowed
     snooze = decide("ol snooze loop-20261120-13f595 1h", p, flags_present=on)
     assert snooze.allowed and snooze.argv[-2:] == ("loop-20261120-13f595", "1h")
+    # pinned guards: its own loops only, a daily cap, a bounded snooze
+    assert {"--only-source", "--max-days"} <= set(snooze.argv)
+    assert "--only-source" in decide("ol done 20261120-13f5", p, flags_present=on).argv
+    assert "--daily-cap" in d.argv
