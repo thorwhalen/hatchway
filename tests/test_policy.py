@@ -219,3 +219,23 @@ def test_read_issue_asks_for_json_not_the_deprecated_projects_field():
     d = decide("gh issue view 7 --repo a/b", p, flags_present=set())
     assert d.allowed and "--json" in d.argv and "--comments" not in d.argv
     assert not decide("gh issue view 7 --repo a/b --comments", p, flags_present=set()).allowed
+
+
+def test_claude_ai_owed_never_verifies_and_blocked_gets_no_flag_it_rejects():
+    """`ol blocked` has no --no-verify: passing it made blocked_work fail every time."""
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    owed = decide("ol owed --limit 200", p, flags_present=set())
+    assert owed.allowed and "--no-verify" in owed.argv and "200" in owed.argv
+    blocked = decide("ol blocked", p, flags_present=set())
+    assert blocked.allowed and "--no-verify" not in blocked.argv
+
+
+def test_claude_ai_recap_asks_for_whole_lines():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    d = decide("crowsnest recap fixer", load_profile("claude-ai"), flags_present=set())
+    assert d.allowed and "--limit" in d.argv

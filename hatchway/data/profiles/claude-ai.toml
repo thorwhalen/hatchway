@@ -82,7 +82,8 @@ help = "Every live Claude Code session, one line each: status, age, name, projec
 match = ["crowsnest", "recap"]
 tool = "session_recap"
 param = "session"
-argv = ["crowsnest", "recap", "--all-homes"]
+# --limit: whole replies for the owner (the page's db keeps its own 200-character clip)
+argv = ["crowsnest", "recap", "--all-homes", "--limit", "1500"]
 min_positional = 1
 max_positional = 1
 arg = "the session's name, as session_roster shows it"
@@ -110,17 +111,24 @@ help = "A session's ledger: what it did and decided, written by the session itse
 
 # --- open loops (openloops) ------------------------------------------------------------
 
+# `ol owed` runs each issue's **Verify:** predicate, a command taken from an issue body:
+# a remote request never runs one (--no-verify), so every predicate row reads `?` here.
+# `ol blocked` runs nothing from issue bodies (it resolves dependency edges through the
+# API), so it takes no such flag and gets none.
+
 [[rule]]
 match = ["ol", "owed"]
 tool = "owed_by_owner"
 argv = ["ol", "owed", "--no-verify"]
-help = "What the owner still owes their agents: open manual tasks, decisions, approvals."
+value_flags = [{ names = ["--limit", "-l"], pattern = "[0-9]{1,3}" }]
+help = "What the owner still owes their agents: open manual tasks, decisions, approvals (limit: how many, default 50; a count marked as a floor means there are more). Predicates are never run from here, so 'done' cannot show: '?' means not checked, not owed."
 
 [[rule]]
 match = ["ol", "blocked"]
 tool = "blocked_work"
-argv = ["ol", "blocked", "--no-verify"]
-help = "Work that is blocked, and on what."
+argv = ["ol", "blocked"]
+value_flags = [{ names = ["--limit", "-l"], pattern = "[0-9]{1,3}" }]
+help = "Work that is blocked on another repository, and work whose blockers all closed ('ready': free to start, and nobody was told). limit: how many candidates to resolve."
 
 # --- GitHub repositories (gh, read only) -----------------------------------------------
 # Repository names are checked against a pattern that refuses '..' and any repository

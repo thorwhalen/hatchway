@@ -31,7 +31,7 @@ For a machine running Claude Code sessions watched by [crowsnest](https://github
 | `crowsnest triage [-q] [--json]` | what needs you, what is safe to close, what is working |
 | `crowsnest show\|turns\|recap\|brief NAME` | one session (show and turns quote its transcript) |
 | `crowsnest ledger [NAME...]`, `groups`, `synopsis GROUP`, `questions`, `lineage`, `report` | the rest of crowsnest's read side |
-| `ol`, `ol owed`, `ol blocked`, `ol dashboard` | openloops, always with `--no-verify` (verify predicates are commands taken from issue bodies, and a remote request never runs them) |
+| `ol`, `ol owed`, `ol blocked`, `ol dashboard` | openloops; `owed` and `dashboard` always with `--no-verify` (verify predicates are commands taken from issue bodies, and a remote request never runs them); `blocked` runs no predicate, so it takes no such flag |
 | `snapshot [FILE]` | list or print the snapshot files |
 | `crowsnest spawn NAME --cwd DIR --prompt TEXT` | **gated**: starts a session on `sonnet`, in a directory under the dispatch roots |
 
