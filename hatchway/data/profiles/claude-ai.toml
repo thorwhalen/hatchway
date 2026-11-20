@@ -25,7 +25,7 @@ the documents it links to). post_handoff writes a note Claude Code will read: us
 when the owner asks to pass something on, and read the title and body back first. \
 create_issue and comment_issue write to GitHub: read the title and text back first; a \
 'needs_approval' or 'held' answer means the publication check kept it for the owner, so \
-say so and do not reword it to get past the check. message_session queues a message for one session (read it back first); it is picked up later, so follow it with intent_status. add_reminder sets a reminder for the owner at a time they said (read back the line it prints); list_reminders, close_reminder and snooze_reminder manage them. request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
+say so and do not reword it to get past the check. message_session queues a message for one session (read it back first); it is picked up later, so follow it with intent_status. add_reminder sets a reminder for the owner at a time they said (read back the line it prints); list_reminders, close_reminder and snooze_reminder manage them. The pile is the owner's capture list (pile_list): to go through it, read the count, then put ONE item at a time to the owner as one sentence with where you propose it goes, and act only on their yes to that item (pile_plan, then run its steps); five items at most per sitting. request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
 it on their desk with Face ID or Touch ID, and use work_status to say what became of it. It \
 answers with one line for Claude Code: show that line to the owner exactly as given, on \
 its own, ready to copy, and tell them to paste it into a Claude Code session.
@@ -63,6 +63,17 @@ requires_flag = "allow-session-message"
 # relay is public), and goes only to the owner's phone. Off until
 # ~/.config/hatchway/allow-reminder exists on the machine that keeps the loops.
 requires_flag = "allow-reminder"
+
+[classes.pile]
+# the owner's capture pile (GTD's In list, one issue per capture in a private `_pile`
+# repository): label or close an item as a plan from `ol pile-plan` says, capture a new
+# one, or keep an idea. openloops plans and never writes; these tools carry the plan out.
+# A close always carries its comment (never a silent drop). Off until
+# ~/.config/hatchway/allow-pile exists on the machine that runs each tool. pile_label,
+# pile_close and pile_capture match no repository here: a machine's private profile
+# names its own pile repository (any account's `_pile` would let text leak to another
+# account's repository).
+requires_flag = "allow-pile"
 
 [classes.work_request]
 # one ask: queue a job on an issue for the owner to confirm in person. It starts nothing:
@@ -190,6 +201,121 @@ max_positional = 2
 positional_pattern = "(?:loop-)?[0-9]{8}-[0-9a-f]{1,8}|[0-9]{1,3}[mhd](?:[0-9]{1,2}m)?|[0-9]{1,2}:[0-9]{2}|[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2})?"
 arg = "the reminder's id, then the new time (20m, 3h, 15:30, 2026-11-21T09:00)"
 help = "Move a reminder set from claude.ai to a new time, at most 14 days ahead. Read back the line it prints."
+
+# --- the capture pile (openloops pile) ----------------------------------------------------
+# Reading, proposing and planning change nothing: `ol pile-plan` returns signed steps
+# (remind / idea / create_issue, then comment, labels, close) that the conversation runs
+# with its own tools, only after the owner said yes to that item. Plans are signed as
+# bosun, with no session link.
+
+[[rule]]
+match = ["ol", "pile"]
+tool = "pile_list"
+argv = ["ol", "pile"]
+help = "What is on the owner's pile (captures said to Siri or typed on the go): open items, oldest first, with the count."
+
+[[rule]]
+match = ["ol", "pile-show"]
+tool = "pile_show"
+param = "number"
+argv = ["ol", "pile-show"]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[0-9]{1,7}"
+arg = "the pile item's number"
+help = "One pile item verbatim (the dictation is the source; it may carry speech-to-text slips) with its comments."
+
+[[rule]]
+match = ["ol", "pile-propose"]
+tool = "pile_propose"
+argv = ["ol", "pile-propose"]
+help = "A rough first proposal per open pile item (kind and why). Improve on it with your own reading before you put it to the owner."
+
+[[rule]]
+match = ["ol", "pile-plan"]
+tool = "pile_plan"
+param = "number_and_kind"
+argv = ["ol", "pile-plan", "--by", "bosun", "--session", "none"]
+value_flags = [
+  { names = ["--reading"], free = true, required = true },
+  { names = ["--title"], free = true },
+  { names = ["--when", "-w"], pattern = "[0-9]{1,3}[mhd](?:[0-9]{1,2}m)?|[0-9]{1,2}:[0-9]{2}|[0-9]{4}-[0-9]{2}-[0-9]{2}(?:T[0-9]{2}:[0-9]{2})?" },
+  { names = ["--target-repo"], pattern = "(?!.*\\.\\.)(?!(?i:.*secret))[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}" },
+  { names = ["--issue-body"], free = true },
+  { names = ["--tags"], pattern = "[A-Za-z0-9_-]{1,30}(?:,[A-Za-z0-9_-]{1,30}){0,9}" },
+  { names = ["--reason"], free = true },
+]
+min_positional = 2
+max_positional = 2
+positional_pattern = "[0-9]{1,7}|loop|idea|issue|work|done|drop|ask"
+arg = "the item's number, then the kind: loop, idea, issue, work, done, drop or ask"
+help = "The signed steps that carry out one decision on a pile item (JSON). Changes nothing. reading: how you read the dictation, one or two lines. loop needs when (or none: listed only); issue needs target_repo, title, issue_body; work, done, drop and ask need reason. Run the steps in order with add_reminder, add_idea, create_issue, comment_issue, pile_label and pile_close, putting what the first produced where a step says {result}."
+
+[[rule]]
+match = ["gh", "issue", "edit"]
+tool = "pile_label"
+class = "pile"
+param = "number"
+argv = ["gh", "issue", "edit"]
+value_flags = [
+  { names = ["--repo", "-R"], pattern = "(?!)", required = true },
+  { names = ["--add-label"], pattern = "(?:pile|routed|dropped|needs-owner|working)(?:,(?:pile|routed|dropped|needs-owner|working)){0,4}" },
+  { names = ["--remove-label"], pattern = "(?:pile|routed|dropped|needs-owner|working)(?:,(?:pile|routed|dropped|needs-owner|working)){0,4}" },
+]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[0-9]{1,7}"
+arg = "the pile item's number"
+help = "A plan's labels step on a pile item (repo: the pile; add_label / remove_label: comma-separated, as the plan gives them)."
+
+[[rule]]
+match = ["gh", "issue", "close"]
+tool = "pile_close"
+class = "pile"
+param = "number"
+argv = ["gh", "issue", "close"]
+value_flags = [
+  { names = ["--repo", "-R"], pattern = "(?!)", required = true },
+  { names = ["--reason", "-r"], pattern = "completed|not planned", required = true },
+  { names = ["--comment", "-c"], free = true, required = true },
+]
+min_positional = 1
+max_positional = 1
+positional_pattern = "[0-9]{1,7}"
+arg = "the pile item's number"
+help = "A plan's close step on a pile item (reason: completed or not planned). comment is required: pass the plan's comment step body here, and skip that comment step, so no item is ever closed without one."
+
+[[rule]]
+match = ["gh", "issue", "create", "pile"]
+tool = "pile_capture"
+class = "pile"
+argv = ["gh", "issue", "create", "--label", "pile", "--body-file", "-"]
+value_flags = [
+  { names = ["--repo", "-R"], pattern = "(?!)", required = true },
+  { names = ["--title", "-t"], free = true, required = true },
+  { names = ["--body", "-b"], free = true },
+  # routing hints only: a machine's private profile lists its own (no label passes here)
+  { names = ["--label", "-l"], pattern = "(?!)" },
+]
+stdin = "--body"
+help = "Put something the owner said onto their pile (title: a few words; body: their words, then a last line saying it was captured through claude.ai; label: an optional routing hint). Only the owner's own words, never your own ideas."
+
+[[rule]]
+match = ["ideadump", "add"]
+tool = "add_idea"
+class = "pile"
+param = "words"
+argv = ["ideadump", "add", "--source", "claude-ai"]
+value_flags = [
+  { names = ["--title"], free = true },
+  { names = ["--summary"], free = true },
+  { names = ["--tags"], pattern = "[A-Za-z0-9_-]{1,30}(?:,[A-Za-z0-9_-]{1,30}){0,9}" },
+]
+min_positional = 1
+max_positional = 1
+positional_pattern = "(?!-)[^\\x00-\\x1f]{1,2000}"
+arg = "the idea in the owner's words, verbatim"
+help = "Keep an idea for later (not a commitment): the owner's words verbatim, with a title, a one-line summary of your reading, and tags. Returns its id."
 
 # --- GitHub repositories (gh, read only) -----------------------------------------------
 # Repository names are checked against a pattern that refuses '..' and any repository

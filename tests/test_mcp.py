@@ -44,6 +44,7 @@ def test_every_rule_is_a_uniquely_named_tool(claude_ai):
             "issue_write",
             "session_message",
             "reminder",
+            "pile",
         ),
     )
     assert [t.__name__ for t in tools] == [tool_name(r) for r in claude_ai.rules]
