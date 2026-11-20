@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-20T16:39:10Z",
+  "built_at": "2026-11-20T18:18:16Z",
   "package": {
     "name": "hatchway",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "display_name": "hatchway",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "622b2b2a25a907448b8e53d95192637aa1dc6a1e",
-    "short_commit": "622b2b2",
+    "commit": "068d6c318103baf16182d90594534e5e20e1be93",
+    "short_commit": "068d6c3",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/hatchway",
-    "commit_url": "https://github.com/thorwhalen/hatchway/commit/622b2b2a25a907448b8e53d95192637aa1dc6a1e",
+    "commit_url": "https://github.com/thorwhalen/hatchway/commit/068d6c318103baf16182d90594534e5e20e1be93",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/hatchway",
-    "sha": "622b2b2a25a907448b8e53d95192637aa1dc6a1e",
+    "sha": "068d6c318103baf16182d90594534e5e20e1be93",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "44775286022",
-    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44775286022",
+    "run_id": "44791264274",
+    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44791264274",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -60,11 +60,11 @@
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.11",
+    "latest": "0.0.12",
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 622b2b2a25a907448b8e53d95192637aa1dc6a1e\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 068d6c318103baf16182d90594534e5e20e1be93\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,

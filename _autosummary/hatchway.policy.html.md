@@ -74,12 +74,13 @@ command’s output stripped (a published link turned into a line to paste elsewh
 `tail` is fixed words placed after the request’s arguments (`-`, for a command
 that reads its text from standard input only in that position).
 
-### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False)
+### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False, required=False)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A flag that takes one value, checked against `pattern` (or free text, or a
-directory under one of the dispatch roots).
+directory under one of the dispatch roots). `required`: a request without it is
+refused (a close that must carry its comment, say).
 
 ### hatchway.policy.decide(request, profile, , flags_present=frozenset({}), dispatch_roots=(), roots=None)
 

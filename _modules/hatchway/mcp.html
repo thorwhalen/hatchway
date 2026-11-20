@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=0c446633"></script>
+    <script src="../../_static/documentation_options.js?v=3bbcec59"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.11" />
+  <meta name="docsearch:version" content="0.0.12" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1137,8 +1137,12 @@ window.runMermaid = runMermaid;</script>
         <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">positional</span><span class="p">,</span> <span class="n">_KW</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">ann</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">:</span>
         <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="n">_KW</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">value_flags</span><span class="p">:</span>
-        <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="n">_KW</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">spelled</span> <span class="ow">in</span> <span class="n">value_flags</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">vf</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">value_flag</span><span class="p">(</span><span class="n">spelled</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">vf</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="n">_KW</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="n">_KW</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">))</span>
     <span class="n">pages</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">klass</span> <span class="o">==</span> <span class="s2">"read"</span>  <span class="c1"># paging re-runs the command: never for one that writes</span>
     <span class="k">if</span> <span class="n">pages</span><span class="p">:</span>
         <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>

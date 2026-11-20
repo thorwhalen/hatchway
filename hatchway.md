@@ -1,4 +1,4 @@
-> built 2026-11-20 16:39 UTC from 622b2b2 (main) · hatchway 0.0.11. Details: build_info.json
+> built 2026-11-20 18:18 UTC from 068d6c3 (main) · hatchway 0.0.12. Details: build_info.json
 
 # index.html.md
 
@@ -789,12 +789,13 @@ command’s output stripped (a published link turned into a line to paste elsewh
 `tail` is fixed words placed after the request’s arguments (`-`, for a command
 that reads its text from standard input only in that position).
 
-### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False)
+### *class* hatchway.policy.ValueFlag(names, pattern='[A-Za-z0-9][A-Za-z0-9._@:+-]{0,127}', free=False, path_under_roots=False, required=False)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A flag that takes one value, checked against `pattern` (or free text, or a
-directory under one of the dispatch roots).
+directory under one of the dispatch roots). `required`: a request without it is
+refused (a close that must carry its comment, say).
 
 ### hatchway.policy.decide(request, profile, , flags_present=frozenset({}), dispatch_roots=(), roots=None)
 
@@ -828,7 +829,7 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-20 16:39 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/622b2b2a25a907448b8e53d95192637aa1dc6a1e"><code>622b2b2</code></a> on branch <code>main</code>, for **hatchway 0.0.11** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-20 18:18 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/068d6c318103baf16182d90594534e5e20e1be93"><code>068d6c3</code></a> on branch <code>main</code>, for **hatchway 0.0.12** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -837,7 +838,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/622b2b2a25a907448b8e53d95192637aa1dc6a1e"><code>622b2b2a25a907448b8e53d95192637aa1dc6a1e</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/068d6c318103baf16182d90594534e5e20e1be93"><code>068d6c318103baf16182d90594534e5e20e1be93</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -848,9 +849,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44775286022">44775286022</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44791264274">44791264274</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>622b2b2a25a907448b8e53d95192637aa1dc6a1e</code> (in the history of the built commit) |
+| Event commit | <code>068d6c318103baf16182d90594534e5e20e1be93</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -875,13 +876,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.11/">0.0.11</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.12/">0.0.12</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout 622b2b2a25a907448b8e53d95192637aa1dc6a1e
+git checkout 068d6c318103baf16182d90594534e5e20e1be93
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
