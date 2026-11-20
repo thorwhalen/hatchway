@@ -276,24 +276,56 @@ def test_claude_ai_reminders_are_gated_never_revealed_and_take_a_spoken_title():
     assert "--daily-cap" in d.argv
 
 
-def test_a_required_value_flag_refuses_a_request_without_it():
+def _pile_profile():
+    """The bundled profile with its pile rules narrowed to one pile, as a machine does."""
+    import dataclasses
+
+    from hatchway.config import load_profile
+
+    p = load_profile("claude-ai")
+    rules = []
+    for r in p.rules:
+        if r.tool in ("pile_label", "pile_close", "pile_capture"):
+            vfs = tuple(
+                dataclasses.replace(v, pattern="o/_pile") if "--repo" in v.names else v
+                for v in r.value_flags
+            )
+            r = dataclasses.replace(r, value_flags=vfs)
+        rules.append(r)
+    return dataclasses.replace(p, rules=tuple(rules))
+
+
+def test_the_bundled_pile_writes_match_no_repository_until_a_machine_narrows_them():
     from hatchway.config import load_profile
     from hatchway.policy import decide
 
     p = load_profile("claude-ai")
+    for req in (
+        "gh issue edit 3 --repo o/_pile --add-label routed",
+        "gh issue close 3 --repo o/_pile --reason completed --comment x",
+        "gh issue create pile --repo evil/_pile --title T --body x",
+    ):
+        assert not decide(req, p, flags_present={"allow-pile"}).allowed, req
+
+
+def test_a_required_value_flag_refuses_a_request_without_it():
+    from hatchway.policy import decide
+
+    p = _pile_profile()
     on = {"allow-pile"}
     closing = "gh issue close 12 --repo o/_pile --reason completed"
     assert "--comment is required" in decide(closing, p, flags_present=on).reason
     assert decide(closing + " --comment 'done: merged'", p, flags_present=on).allowed
+    for blank in (" --comment ''", " --comment=", " --comment ' '"):
+        assert not decide(closing + blank, p, flags_present=on).allowed, blank
 
 
 def test_claude_ai_pile_tools_reach_only_the_pile_and_never_close_silently():
     import shlex
 
-    from hatchway.config import load_profile
     from hatchway.policy import decide
 
-    p = load_profile("claude-ai")
+    p = _pile_profile()
     on = {"allow-pile"}
     # reads change nothing and need no flag; a plan is signed as bosun, with no session
     for req in ("ol pile", "ol pile-show 3", "ol pile-propose"):
@@ -316,6 +348,8 @@ def test_claude_ai_pile_tools_reach_only_the_pile_and_never_close_silently():
         "gh issue close 3 --repo o/_pile --reason completed",
         "gh issue close 3 --repo o/other --reason completed --comment x",
         "gh issue create pile --repo o/_pile",
+        "gh issue create pile --repo evil/_pile --title T --body x",
+        "gh issue create pile --repo o/_pile --title T --body x --label manual-task",
     ):
         assert not decide(bad, p, flags_present=on).allowed, bad
     cap = decide(

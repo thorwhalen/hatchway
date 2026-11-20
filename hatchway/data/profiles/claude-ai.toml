@@ -69,7 +69,10 @@ requires_flag = "allow-reminder"
 # repository): label or close an item as a plan from `ol pile-plan` says, capture a new
 # one, or keep an idea. openloops plans and never writes; these tools carry the plan out.
 # A close always carries its comment (never a silent drop). Off until
-# ~/.config/hatchway/allow-pile exists on the machine that runs each tool.
+# ~/.config/hatchway/allow-pile exists on the machine that runs each tool. pile_label,
+# pile_close and pile_capture match no repository here: a machine's private profile
+# names its own pile repository (any account's `_pile` would let text leak to another
+# account's repository).
 requires_flag = "allow-pile"
 
 [classes.work_request]
@@ -255,7 +258,7 @@ class = "pile"
 param = "number"
 argv = ["gh", "issue", "edit"]
 value_flags = [
-  { names = ["--repo", "-R"], pattern = "(?!.*\\.\\.)[A-Za-z0-9][A-Za-z0-9-]{0,38}/_pile", required = true },
+  { names = ["--repo", "-R"], pattern = "(?!)", required = true },
   { names = ["--add-label"], pattern = "(?:pile|routed|dropped|needs-owner|working)(?:,(?:pile|routed|dropped|needs-owner|working)){0,4}" },
   { names = ["--remove-label"], pattern = "(?:pile|routed|dropped|needs-owner|working)(?:,(?:pile|routed|dropped|needs-owner|working)){0,4}" },
 ]
@@ -272,7 +275,7 @@ class = "pile"
 param = "number"
 argv = ["gh", "issue", "close"]
 value_flags = [
-  { names = ["--repo", "-R"], pattern = "(?!.*\\.\\.)[A-Za-z0-9][A-Za-z0-9-]{0,38}/_pile", required = true },
+  { names = ["--repo", "-R"], pattern = "(?!)", required = true },
   { names = ["--reason", "-r"], pattern = "completed|not planned", required = true },
   { names = ["--comment", "-c"], free = true, required = true },
 ]
@@ -288,10 +291,10 @@ tool = "pile_capture"
 class = "pile"
 argv = ["gh", "issue", "create", "--label", "pile", "--body-file", "-"]
 value_flags = [
-  { names = ["--repo", "-R"], pattern = "(?!.*\\.\\.)[A-Za-z0-9][A-Za-z0-9-]{0,38}/_pile", required = true },
+  { names = ["--repo", "-R"], pattern = "(?!)", required = true },
   { names = ["--title", "-t"], free = true, required = true },
   { names = ["--body", "-b"], free = true },
-  { names = ["--label", "-l"], pattern = "[a-z][a-z0-9-]{1,20}" },
+  { names = ["--label", "-l"], pattern = "(?!(?:pile|routed|dropped|needs-owner|working|manual-task)$)[a-z][a-z0-9-]{1,20}" },
 ]
 stdin = "--body"
 help = "Put something the owner said onto their pile (title: a few words; body: their words, then a last line saying it was captured through claude.ai; label: an optional routing hint). Only the owner's own words, never your own ideas."
