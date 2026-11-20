@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-19T18:06:48Z",
+  "built_at": "2026-11-20T16:24:33Z",
   "package": {
     "name": "hatchway",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "display_name": "hatchway",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "a1dc525254c0f4aee2bf28ea1bbf35c0bb6fdaeb",
-    "short_commit": "a1dc525",
+    "commit": "bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099",
+    "short_commit": "bbeb0e5",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/hatchway",
-    "commit_url": "https://github.com/thorwhalen/hatchway/commit/a1dc525254c0f4aee2bf28ea1bbf35c0bb6fdaeb",
+    "commit_url": "https://github.com/thorwhalen/hatchway/commit/bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/hatchway",
-    "sha": "a1dc525254c0f4aee2bf28ea1bbf35c0bb6fdaeb",
+    "sha": "bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "44584076787",
-    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44584076787",
+    "run_id": "44772846170",
+    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44772846170",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -61,15 +61,13 @@
   "pypi": {
     "checked": true,
     "latest": "0.0.10",
-    "relation": "behind",
+    "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout a1dc525254c0f4aee2bf28ea1bbf35c0bb6fdaeb\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
-    "aligned": false,
-    "notes": [
-      "The documented version (0.0.9) is behind the latest release on PyPI (0.0.10): `pip install hatchway` gives newer code than these docs describe."
-    ]
+    "aligned": true,
+    "notes": []
   }
 }
