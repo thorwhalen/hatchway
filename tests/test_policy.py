@@ -239,3 +239,34 @@ def test_claude_ai_recap_asks_for_whole_lines():
 
     d = decide("crowsnest recap fixer", load_profile("claude-ai"), flags_present=set())
     assert d.allowed and "--limit" in d.argv
+
+
+def test_claude_ai_reminders_are_gated_never_revealed_and_take_a_spoken_title():
+    import shlex
+
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    on = {"allow-reminder"}
+    req = shlex.join(
+        ["ol", "remind", "--when", "2026-11-21T09:00", "Call the bank about the card"]
+    )
+    assert not decide(req, p, flags_present=set()).allowed  # off until its flag exists
+    d = decide(req, p, flags_present=on)
+    assert d.allowed and "--reveal" not in d.argv and "claude-ai" in d.argv
+    assert d.argv[-1] == "Call the bank about the card"
+    for when in ("20m", "3h", "1h30m", "15:30", "2026-11-21"):
+        assert decide(f"ol remind --when {when} Stretch", p, flags_present=on).allowed, when
+    for bad in (
+        "ol remind --reveal Stretch",
+        "ol remind --when tomorrow Stretch",
+        "ol remind -- --help",
+        "ol remind 'Stretch; rm -rf ~'",
+    ):
+        assert not decide(bad, p, flags_present=on).allowed, bad
+    assert decide("ol loops --state all", p, flags_present=set()).allowed  # a read
+    assert decide("ol done loop-20261120-13f595", p, flags_present=on).allowed
+    assert not decide("ol done ../x", p, flags_present=on).allowed
+    snooze = decide("ol snooze loop-20261120-13f595 1h", p, flags_present=on)
+    assert snooze.allowed and snooze.argv[-2:] == ("loop-20261120-13f595", "1h")
