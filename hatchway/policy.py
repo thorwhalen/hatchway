@@ -40,12 +40,14 @@ _SHELL_META = set(";&|`$<>\\\n\r\x00")
 @dataclass(frozen=True)
 class ValueFlag:
     """A flag that takes one value, checked against ``pattern`` (or free text, or a
-    directory under one of the dispatch roots)."""
+    directory under one of the dispatch roots). ``required``: a request without it is
+    refused (a close that must carry its comment, say)."""
 
     names: tuple[str, ...]
     pattern: str = DFLT_POSITIONAL_PATTERN
     free: bool = False
     path_under_roots: bool = False
+    required: bool = False
 
     @classmethod
     def from_dict(cls, d: Mapping) -> ValueFlag:
@@ -56,6 +58,7 @@ class ValueFlag:
             pattern=d.get("pattern", DFLT_POSITIONAL_PATTERN),
             free=bool(d.get("free", False)),
             path_under_roots=bool(d.get("path_under_roots", False)),
+            required=bool(d.get("required", False)),
         )
 
 
@@ -229,7 +232,7 @@ def decide(
         return _refuse(
             request, f"class {rule.klass!r} is switched off (flag {needed!r} absent)", rule
         )
-    extras, positional, stdin = [], [], None
+    extras, positional, stdin, given = [], [], None, set()
     rest = list(tokens[len(rule.match) :])
     while rest:
         tok = rest.pop(0)
@@ -257,6 +260,7 @@ def decide(
             )
             if problem:
                 return _refuse(request, f"{name[:40]}: {problem}", rule)
+            given.add(vf.names[0])
             if vf.path_under_roots:
                 value = str(Path(value).expanduser().resolve())
             if to_stdin:
@@ -278,6 +282,9 @@ def decide(
         )
     if rule.stdin and stdin is None:
         return _refuse(request, f"{rule.stdin} is required", rule)
+    for vf in rule.value_flags:
+        if vf.required and vf.names[0] not in given:
+            return _refuse(request, f"{vf.names[0]} is required", rule)
     if rule.kind == "file":
         return _decide_file(request, rule, positional, roots or {})
     # Positionals go after `--` so a name can never be read as an option by the tool.

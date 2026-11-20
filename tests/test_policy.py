@@ -274,3 +274,66 @@ def test_claude_ai_reminders_are_gated_never_revealed_and_take_a_spoken_title():
     assert {"--only-source", "--max-days"} <= set(snooze.argv)
     assert "--only-source" in decide("ol done 20261120-13f5", p, flags_present=on).argv
     assert "--daily-cap" in d.argv
+
+
+def test_a_required_value_flag_refuses_a_request_without_it():
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    on = {"allow-pile"}
+    closing = "gh issue close 12 --repo o/_pile --reason completed"
+    assert "--comment is required" in decide(closing, p, flags_present=on).reason
+    assert decide(closing + " --comment 'done: merged'", p, flags_present=on).allowed
+
+
+def test_claude_ai_pile_tools_reach_only_the_pile_and_never_close_silently():
+    import shlex
+
+    from hatchway.config import load_profile
+    from hatchway.policy import decide
+
+    p = load_profile("claude-ai")
+    on = {"allow-pile"}
+    # reads change nothing and need no flag; a plan is signed as bosun, with no session
+    for req in ("ol pile", "ol pile-show 3", "ol pile-propose"):
+        assert decide(req, p, flags_present=set()).allowed, req
+    plan = decide(
+        shlex.join(["ol", "pile-plan", "3", "drop", "--reading", "a test", "--reason", "dup"]),
+        p,
+        flags_present=set(),
+    )
+    assert plan.allowed and plan.argv[2:6] == ("--by", "bosun", "--session", "none")
+    assert not decide("ol pile-plan 3 drop --reason dup", p, flags_present=set()).allowed
+    # writes: off without the flag, and only on a _pile repository
+    edit = "gh issue edit 3 --repo o/_pile --add-label routed --remove-label pile"
+    assert not decide(edit, p, flags_present=set()).allowed
+    assert decide(edit, p, flags_present=on).allowed
+    for bad in (
+        "gh issue edit 3 --repo o/equerry --add-label routed",
+        "gh issue edit 3 --repo o/_pile --title x",
+        "gh issue edit 3 --repo o/_pile --add-label manual-task",
+        "gh issue close 3 --repo o/_pile --reason completed",
+        "gh issue close 3 --repo o/other --reason completed --comment x",
+        "gh issue create pile --repo o/_pile",
+    ):
+        assert not decide(bad, p, flags_present=on).allowed, bad
+    cap = decide(
+        shlex.join(
+            [
+                "gh",
+                "issue",
+                "create",
+                "pile",
+                "--repo",
+                "o/_pile",
+                "--title",
+                "T",
+                "--body",
+                "- the owner's words",
+            ]
+        ),
+        p,
+        flags_present=on,
+    )
+    assert cap.allowed and cap.stdin == "- the owner's words" and "pile" in cap.argv

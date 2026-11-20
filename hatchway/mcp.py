@@ -394,8 +394,12 @@ def mk_tool(rule: Rule, *, runner: Runner, max_chars: int = DFLT_MAX_CHARS) -> C
         params.append(inspect.Parameter(positional, _KW, default=default, annotation=ann))
     for pname in flags:
         params.append(inspect.Parameter(pname, _KW, default=False, annotation=bool))
-    for pname in value_flags:
-        params.append(inspect.Parameter(pname, _KW, default=None, annotation=str | None))
+    for pname, spelled in value_flags.items():
+        vf = rule.value_flag(spelled)
+        if vf is not None and vf.required:
+            params.append(inspect.Parameter(pname, _KW, annotation=str))
+        else:
+            params.append(inspect.Parameter(pname, _KW, default=None, annotation=str | None))
     pages = rule.klass == "read"  # paging re-runs the command: never for one that writes
     if pages:
         params.append(
