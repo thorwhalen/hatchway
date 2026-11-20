@@ -294,7 +294,8 @@ value_flags = [
   { names = ["--repo", "-R"], pattern = "(?!)", required = true },
   { names = ["--title", "-t"], free = true, required = true },
   { names = ["--body", "-b"], free = true },
-  { names = ["--label", "-l"], pattern = "(?!(?:pile|routed|dropped|needs-owner|working|manual-task)$)[a-z][a-z0-9-]{1,20}" },
+  # routing hints only: a machine's private profile lists its own (no label passes here)
+  { names = ["--label", "-l"], pattern = "(?!)" },
 ]
 stdin = "--body"
 help = "Put something the owner said onto their pile (title: a few words; body: their words, then a last line saying it was captured through claude.ai; label: an optional routing hint). Only the owner's own words, never your own ideas."

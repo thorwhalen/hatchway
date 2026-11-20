@@ -258,8 +258,8 @@ def decide(
                 if to_stdin
                 else _check_value(value, vf, dispatch_roots)
             )
-            if not problem and vf.required and not value.strip():
-                problem = "a required value may not be blank"
+            if not problem and vf.required and not re.search(r"\w", value):
+                problem = "a required value needs at least one letter or digit"
             if problem:
                 return _refuse(request, f"{name[:40]}: {problem}", rule)
             given.add(vf.names[0])

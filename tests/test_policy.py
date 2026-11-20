@@ -316,7 +316,7 @@ def test_a_required_value_flag_refuses_a_request_without_it():
     closing = "gh issue close 12 --repo o/_pile --reason completed"
     assert "--comment is required" in decide(closing, p, flags_present=on).reason
     assert decide(closing + " --comment 'done: merged'", p, flags_present=on).allowed
-    for blank in (" --comment ''", " --comment=", " --comment ' '"):
+    for blank in (" --comment ''", " --comment=", " --comment ' '", " --comment '\u200b'"):
         assert not decide(closing + blank, p, flags_present=on).allowed, blank
 
 
