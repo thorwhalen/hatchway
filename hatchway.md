@@ -1,4 +1,4 @@
-> built 2026-11-20 16:24 UTC from bbeb0e5 (main) · hatchway 0.0.10. Details: build_info.json
+> built 2026-11-20 16:39 UTC from 622b2b2 (main) · hatchway 0.0.11. Details: build_info.json
 
 # index.html.md
 
@@ -71,7 +71,7 @@ app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff"
 
 The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. `routed_runner` sends a request to the runner of the longest leading words it matches (`"crowsnest"`, `"crowsnest intent"`); `with_fallback` asks a second machine only when the first cannot be reached; `fan_out` asks several machines in parallel and merges their answers, each line tagged with its machine, and names on its own line any machine that did not answer, so a partial list never reads as a whole one. Use it for reads only: a request that changes something goes to one runner. A rule’s `reply` (a template over `{out}`, the command’s output) shapes a successful answer for these transports, as `post_handoff` does to return a line to paste into Claude Code. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
 
-**The bundled `claude-ai` profile** is shaped for a conversation, typed or spoken: Claude Code sessions (`session_triage`, `session_roster`, `session_recap`, `session_turns`, `session_ledger`), open loops (`owed_by_owner`, `blocked_work`), GitHub read-only (`list_repos`, `repo_overview`, `read_repo_file`, `list_issues`, `read_issue`; a repository whose name contains `secret` is refused), and a handoff inbox shared with Claude Code through [annals](https://github.com/thorwhalen/annals) (`read_handoffs`, `read_document` and `document_info`, which take an annals link as handed, on any annals the machine’s annals config can read, and `post_handoff` in the `handoff` class, whose text goes to the command’s standard input, never its arguments). A machine adds what only it has in a private profile that starts with `extends = "claude-ai"`.
+**The bundled `claude-ai` profile** is shaped for a conversation, typed or spoken: Claude Code sessions (`session_triage`, `session_roster`, `session_recap`, `session_turns`, `session_ledger`), open loops (`owed_by_owner`, `blocked_work`), the owner’s reminders (`list_reminders`; and `add_reminder`, `close_reminder`, `snooze_reminder` in the `reminder` class, off until `allow-reminder` exists; a push never reveals its title), GitHub read-only (`list_repos`, `repo_overview`, `read_repo_file`, `list_issues`, `read_issue`; a repository whose name contains `secret` is refused), and a handoff inbox shared with Claude Code through [annals](https://github.com/thorwhalen/annals) (`read_handoffs`, `read_document` and `document_info`, which take an annals link as handed, on any annals the machine’s annals config can read, and `post_handoff` in the `handoff` class, whose text goes to the command’s standard input, never its arguments). A machine adds what only it has in a private profile that starts with `extends = "claude-ai"`.
 
 ## Configuration
 
@@ -828,7 +828,7 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-20 16:24 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099"><code>bbeb0e5</code></a> on branch <code>main</code>, for **hatchway 0.0.10** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-20 16:39 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/622b2b2a25a907448b8e53d95192637aa1dc6a1e"><code>622b2b2</code></a> on branch <code>main</code>, for **hatchway 0.0.11** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -837,7 +837,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099"><code>bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/622b2b2a25a907448b8e53d95192637aa1dc6a1e"><code>622b2b2a25a907448b8e53d95192637aa1dc6a1e</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -848,9 +848,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44772846170">44772846170</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44775286022">44775286022</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099</code> (in the history of the built commit) |
+| Event commit | <code>622b2b2a25a907448b8e53d95192637aa1dc6a1e</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -875,13 +875,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.10/">0.0.10</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.11/">0.0.11</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout bbeb0e5b5bc5dcb6def37ab089cb6ef1d2af0099
+git checkout 622b2b2a25a907448b8e53d95192637aa1dc6a1e
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
