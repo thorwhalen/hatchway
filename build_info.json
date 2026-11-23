@@ -1,36 +1,36 @@
 {
   "schema_version": 1,
-  "built_at": "2026-11-20T18:18:16Z",
+  "built_at": "2026-11-23T17:38:12Z",
   "package": {
     "name": "hatchway",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "display_name": "hatchway",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "068d6c318103baf16182d90594534e5e20e1be93",
-    "short_commit": "068d6c3",
+    "commit": "bf6fb69d24993ef1128425ca7367ec86c0ed868f",
+    "short_commit": "bf6fb69",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/hatchway",
-    "commit_url": "https://github.com/thorwhalen/hatchway/commit/068d6c318103baf16182d90594534e5e20e1be93",
+    "commit_url": "https://github.com/thorwhalen/hatchway/commit/bf6fb69d24993ef1128425ca7367ec86c0ed868f",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/hatchway",
-    "sha": "068d6c318103baf16182d90594534e5e20e1be93",
+    "sha": "bf6fb69d24993ef1128425ca7367ec86c0ed868f",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "44791264274",
-    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/44791264274",
+    "run_id": "45229554254",
+    "run_url": "https://github.com/thorwhalen/hatchway/actions/runs/45229554254",
     "server_url": "https://github.com"
   },
   "tools": {
-    "epythet": "0.2.22",
+    "epythet": "0.2.25",
     "sphinx": "9.1.1",
     "docutils": "0.22.4",
     "python": "3.12.16"
@@ -60,14 +60,16 @@
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.12",
-    "relation": "same",
+    "latest": "0.0.14",
+    "relation": "behind",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout 068d6c318103baf16182d90594534e5e20e1be93\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/hatchway && cd hatchway\ngit checkout bf6fb69d24993ef1128425ca7367ec86c0ed868f\npip install \"epythet==0.2.25\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
-    "aligned": true,
-    "notes": []
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.13) is behind the latest release on PyPI (0.0.14): `pip install hatchway` gives newer code than these docs describe."
+    ]
   }
 }

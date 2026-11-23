@@ -2,16 +2,18 @@
 
 # About this build
 
-This documentation was built on **2026-11-20 18:18 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/068d6c318103baf16182d90594534e5e20e1be93"><code>068d6c3</code></a> on branch <code>main</code>, for **hatchway 0.0.12** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-23 17:38 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/bf6fb69d24993ef1128425ca7367ec86c0ed868f"><code>bf6fb69</code></a> on branch <code>main</code>, for **hatchway 0.0.13** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.13) is behind the latest release on PyPI (0.0.14): `pip install hatchway` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/068d6c318103baf16182d90594534e5e20e1be93"><code>068d6c318103baf16182d90594534e5e20e1be93</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/bf6fb69d24993ef1128425ca7367ec86c0ed868f"><code>bf6fb69d24993ef1128425ca7367ec86c0ed868f</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -22,15 +24,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/44791264274">44791264274</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/45229554254">45229554254</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>068d6c318103baf16182d90594534e5e20e1be93</code> (in the history of the built commit) |
+| Event commit | <code>bf6fb69d24993ef1128425ca7367ec86c0ed868f</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.22  |
+| epythet  | 0.2.25  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.16 |
@@ -49,14 +51,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.12/">0.0.12</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.14/">0.0.14</a>, newer than the documented version (0.0.13).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout 068d6c318103baf16182d90594534e5e20e1be93
-pip install "epythet==0.2.22"
+git checkout bf6fb69d24993ef1128425ca7367ec86c0ed868f
+pip install "epythet==0.2.25"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
