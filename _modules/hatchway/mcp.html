@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=9fc46840"></script>
+    <script src="../../_static/documentation_options.js?v=544df88d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.13" />
+  <meta name="docsearch:version" content="0.0.14" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1219,6 +1219,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">max_chars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_MAX_CHARS</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">server_kwargs</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A ``FastMCP`` server over ``profile``'s rules.</span>
@@ -1226,6 +1227,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ``runner`` defaults to :func:`local_runner` with the same profile. ``server_kwargs``</span>
 <span class="sd">    go to ``FastMCP`` (``auth=``, ``middleware=``): authentication belongs to whoever</span>
 <span class="sd">    serves this over a network, not to hatchway.</span>
+
+<span class="sd">    ``tag`` is the name the client knows this connector by. When given, every tool's</span>
+<span class="sd">    description starts with it and the instructions say to search for it</span>
+<span class="sd">    (:func:`tagged`): a client that holds many tools offers some only through a tool</span>
+<span class="sd">    search, which then finds all of these by one word.</span>
 <span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">fastmcp</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastMCP</span>
 
@@ -1241,14 +1247,49 @@ window.runMermaid = runMermaid;</script>
         <span class="n">profile</span> <span class="o">=</span> <span class="n">profile</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">profile</span>
         <span class="n">runner</span> <span class="o">=</span> <span class="n">runner</span> <span class="ow">or</span> <span class="n">local_runner</span><span class="p">(</span><span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
         <span class="n">profile</span> <span class="o">=</span> <span class="n">load_profile</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)</span>
+    <span class="n">instructions</span> <span class="o">=</span> <span class="n">instructions</span> <span class="k">if</span> <span class="n">instructions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">profile</span><span class="o">.</span><span class="n">instructions</span>
+    <span class="n">tools</span> <span class="o">=</span> <span class="n">mk_tools</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="n">classes</span><span class="p">,</span> <span class="n">max_chars</span><span class="o">=</span><span class="n">max_chars</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tag</span><span class="p">:</span>
+        <span class="n">instructions</span><span class="p">,</span> <span class="n">tools</span> <span class="o">=</span> <span class="n">tagged</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">instructions</span><span class="p">,</span> <span class="n">tools</span><span class="p">)</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">FastMCP</span><span class="p">(</span>
         <span class="n">name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">"hatchway-</span><span class="si">{</span><span class="n">profile</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'profile'</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-        <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span> <span class="k">if</span> <span class="n">instructions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">profile</span><span class="o">.</span><span class="n">instructions</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
         <span class="o">**</span><span class="n">server_kwargs</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">mk_tools</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">,</span> <span class="n">classes</span><span class="o">=</span><span class="n">classes</span><span class="p">,</span> <span class="n">max_chars</span><span class="o">=</span><span class="n">max_chars</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span><span class="p">:</span>
         <span class="n">server</span><span class="o">.</span><span class="n">tool</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="n">annotations</span><span class="o">=</span><span class="p">{</span><span class="s2">"readOnlyHint"</span><span class="p">:</span> <span class="n">_read_only</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="n">profile</span><span class="p">)})</span>
     <span class="k">return</span> <span class="n">server</span></div>
+
+
+
+<div class="viewcode-block" id="tagged">
+<a class="viewcode-back" href="../../_autosummary/hatchway.mcp.html#hatchway.mcp.tagged">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tagged</span><span class="p">(</span>
+    <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">instructions</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tools</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""``instructions`` and ``tools`` marked with the connector's name ``tag``.</span>
+
+<span class="sd">    Each tool's description starts with ``"&lt;tag&gt;: "``, and the instructions end with how</span>
+<span class="sd">    to find a tool the client has not loaded: search its tools for ``tag`` and a word.</span>
+
+<span class="sd">    &gt;&gt;&gt; def f(): "Read one file."</span>
+<span class="sd">    &gt;&gt;&gt; text, (g,) = tagged("Fleet", "Tools.", [f])</span>
+<span class="sd">    &gt;&gt;&gt; g.__doc__</span>
+<span class="sd">    'Fleet: Read one file.'</span>
+<span class="sd">    &gt;&gt;&gt; text.endswith("(session, repo, issue, reminder, pile, handoff, message).")</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tag</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"a tag is the connector's name, not blank"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span><span class="p">:</span>
+        <span class="n">tool</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="vm">__doc__</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+    <span class="n">hint</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"If a </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> tool you need is not in your tool list, search your tools for "</span>
+        <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">' and a word for what you need (session, repo, issue, reminder, pile, "</span>
+        <span class="s2">"handoff, message)."</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">instructions</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">instructions</span> <span class="k">else</span> <span class="n">hint</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">tools</span><span class="p">)</span></div>
 
 
 

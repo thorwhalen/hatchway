@@ -28,6 +28,7 @@ hatchway.mcp
       routed_runner
       ssh_runner
       tag_lines
+      tagged
       tool_name
       unreachable
       with_fallback

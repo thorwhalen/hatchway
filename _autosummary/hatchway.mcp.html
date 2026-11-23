@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=9fc46840"></script>
+    <script src="../_static/documentation_options.js?v=544df88d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.13" />
+  <meta name="docsearch:version" content="0.0.14" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -470,13 +470,16 @@ holding any of their credentials. Building the server needs <code class="docutil
 <tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.tag_lines" title="hatchway.mcp.tag_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tag_lines</span></code></a>(name, text)</p></td>
 <td><p>Every non-blank line of <code class="docutils literal notranslate"><span class="pre">text</span></code> prefixed with <code class="docutils literal notranslate"><span class="pre">[name]</span></code>, so merged rows say whose they are.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.tool_name" title="hatchway.mcp.tool_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tool_name</span></code></a>(rule)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.tagged" title="hatchway.mcp.tagged"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tagged</span></code></a>(tag, instructions, tools)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">instructions</span></code> and <code class="docutils literal notranslate"><span class="pre">tools</span></code> marked with the connector's name <code class="docutils literal notranslate"><span class="pre">tag</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.tool_name" title="hatchway.mcp.tool_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tool_name</span></code></a>(rule)</p></td>
 <td><p>The MCP name of a rule: its <code class="docutils literal notranslate"><span class="pre">tool</span></code> key, else its words joined by underscores.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.unreachable" title="hatchway.mcp.unreachable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unreachable</span></code></a>(result)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.unreachable" title="hatchway.mcp.unreachable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unreachable</span></code></a>(result)</p></td>
 <td><p>Whether <code class="docutils literal notranslate"><span class="pre">result</span></code> is ssh failing to connect, as opposed to the far side answering.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#hatchway.mcp.with_fallback" title="hatchway.mcp.with_fallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_fallback</span></code></a>(primary, fallback, *[, note, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#hatchway.mcp.with_fallback" title="hatchway.mcp.with_fallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_fallback</span></code></a>(primary, fallback, *[, note, ...])</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">primary</span></code>, unless it could not be reached; then <code class="docutils literal notranslate"><span class="pre">fallback</span></code>, with <code class="docutils literal notranslate"><span class="pre">note</span></code> first.</p></td>
 </tr>
 </tbody>
@@ -592,11 +595,15 @@ exactly as they do behind sshd.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="hatchway.mcp.mk_server">
-<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">mk_server</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('read',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instructions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">server_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hatchway/mcp.html#mk_server"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hatchway.mcp.mk_server" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">mk_server</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('read',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instructions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">server_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hatchway/mcp.html#mk_server"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hatchway.mcp.mk_server" title="Link to this definition">#</a></dt>
 <dd><p>A <code class="docutils literal notranslate"><span class="pre">FastMCP</span></code> server over <code class="docutils literal notranslate"><span class="pre">profile</span></code>’s rules.</p>
 <p><code class="docutils literal notranslate"><span class="pre">runner</span></code> defaults to <a class="reference internal" href="#hatchway.mcp.local_runner" title="hatchway.mcp.local_runner"><code class="xref py py-func docutils literal notranslate"><span class="pre">local_runner()</span></code></a> with the same profile. <code class="docutils literal notranslate"><span class="pre">server_kwargs</span></code>
 go to <code class="docutils literal notranslate"><span class="pre">FastMCP</span></code> (<code class="docutils literal notranslate"><span class="pre">auth=</span></code>, <code class="docutils literal notranslate"><span class="pre">middleware=</span></code>): authentication belongs to whoever
 serves this over a network, not to hatchway.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tag</span></code> is the name the client knows this connector by. When given, every tool’s
+description starts with it and the instructions say to search for it
+(<a class="reference internal" href="#hatchway.mcp.tagged" title="hatchway.mcp.tagged"><code class="xref py py-func docutils literal notranslate"><span class="pre">tagged()</span></code></a>): a client that holds many tools offers some only through a tool
+search, which then finds all of these by one word.</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -671,6 +678,27 @@ every machine and about one store from one: <code class="docutils literal notran
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hatchway.mcp.tagged">
+<span class="sig-prename descclassname"><span class="pre">hatchway.mcp.</span></span><span class="sig-name descname"><span class="pre">tagged</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instructions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tools</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hatchway/mcp.html#tagged"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hatchway.mcp.tagged" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">instructions</span></code> and <code class="docutils literal notranslate"><span class="pre">tools</span></code> marked with the connector’s name <code class="docutils literal notranslate"><span class="pre">tag</span></code>.</p>
+<p>Each tool’s description starts with <code class="docutils literal notranslate"><span class="pre">&quot;&lt;tag&gt;:</span> <span class="pre">&quot;</span></code>, and the instructions end with how
+to find a tool the client has not loaded: search its tools for <code class="docutils literal notranslate"><span class="pre">tag</span></code> and a word.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">():</span> <span class="s2">"Read one file."</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">text</span><span class="p">,</span> <span class="p">(</span><span class="n">g</span><span class="p">,)</span> <span class="o">=</span> <span class="n">tagged</span><span class="p">(</span><span class="s2">"Fleet"</span><span class="p">,</span> <span class="s2">"Tools."</span><span class="p">,</span> <span class="p">[</span><span class="n">f</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="vm">__doc__</span>
+<span class="go">'Fleet: Read one file.'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"(session, repo, issue, reminder, pile, handoff, message)."</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>]]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -776,6 +804,7 @@ remote command that happened to exit 255.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.routed_runner"><code class="docutils literal notranslate"><span class="pre">routed_runner()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.ssh_runner"><code class="docutils literal notranslate"><span class="pre">ssh_runner()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.tag_lines"><code class="docutils literal notranslate"><span class="pre">tag_lines()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.tagged"><code class="docutils literal notranslate"><span class="pre">tagged()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.tool_name"><code class="docutils literal notranslate"><span class="pre">tool_name()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.unreachable"><code class="docutils literal notranslate"><span class="pre">unreachable()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hatchway.mcp.with_fallback"><code class="docutils literal notranslate"><span class="pre">with_fallback()</span></code></a></li>

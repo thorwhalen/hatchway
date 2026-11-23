@@ -51,6 +51,7 @@ holding any of their credentials. Building the server needs `fastmcp`
 | [`routed_runner`](#hatchway.mcp.routed_runner)(default, routes)                    | Send a request to the runner of the longest leading words it matches in `routes`.         |
 | [`ssh_runner`](#hatchway.mcp.ssh_runner)(destination, \*[, identity, ssh, ...]) | Send each request over SSH to `destination`, whose key's forced command is the gate.      |
 | [`tag_lines`](#hatchway.mcp.tag_lines)(name, text)                             | Every non-blank line of `text` prefixed with `[name]`, so merged rows say whose they are. |
+| [`tagged`](#hatchway.mcp.tagged)(tag, instructions, tools)                  | `instructions` and `tools` marked with the connector's name `tag`.                        |
 | [`tool_name`](#hatchway.mcp.tool_name)(rule)                                   | The MCP name of a rule: its `tool` key, else its words joined by underscores.             |
 | [`unreachable`](#hatchway.mcp.unreachable)(result)                               | Whether `result` is ssh failing to connect, as opposed to the far side answering.         |
 | [`with_fallback`](#hatchway.mcp.with_fallback)(primary, fallback, \*[, note, ...]) | `primary`, unless it could not be reached; then `fallback`, with `note` first.            |
@@ -137,13 +138,18 @@ exactly as they do behind sshd.
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](#hatchway.mcp.Result)]
 
-### hatchway.mcp.mk_server(profile=None, , runner=None, settings=None, classes=('read',), max_chars=6000, name=None, instructions=None, \*\*server_kwargs)
+### hatchway.mcp.mk_server(profile=None, , runner=None, settings=None, classes=('read',), max_chars=6000, name=None, instructions=None, tag=None, \*\*server_kwargs)
 
 A `FastMCP` server over `profile`’s rules.
 
 `runner` defaults to [`local_runner()`](#hatchway.mcp.local_runner) with the same profile. `server_kwargs`
 go to `FastMCP` (`auth=`, `middleware=`): authentication belongs to whoever
 serves this over a network, not to hatchway.
+
+`tag` is the name the client knows this connector by. When given, every tool’s
+description starts with it and the instructions say to search for it
+([`tagged()`](#hatchway.mcp.tagged)): a client that holds many tools offers some only through a tool
+search, which then finds all of these by one word.
 
 ### hatchway.mcp.mk_tool(rule, , runner, max_chars=6000)
 
@@ -203,6 +209,25 @@ Every non-blank line of `text` prefixed with `[name]`, so merged rows say whose 
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### hatchway.mcp.tagged(tag, instructions, tools)
+
+`instructions` and `tools` marked with the connector’s name `tag`.
+
+Each tool’s description starts with `"<tag>: "`, and the instructions end with how
+to find a tool the client has not loaded: search its tools for `tag` and a word.
+
+```pycon
+>>> def f(): "Read one file."
+>>> text, (g,) = tagged("Fleet", "Tools.", [f])
+>>> g.__doc__
+'Fleet: Read one file.'
+>>> text.endswith("(session, repo, issue, reminder, pile, handoff, message).")
+True
+```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]]
 
 ### hatchway.mcp.tool_name(rule)
 

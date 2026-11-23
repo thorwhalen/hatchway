@@ -1,4 +1,4 @@
-> built 2026-11-23 17:38 UTC from bf6fb69 (main) · hatchway 0.0.13. Details: build_info.json
+> built 2026-11-23 19:15 UTC from 97b0b0a (main) · hatchway 0.0.14. Details: build_info.json
 
 # index.html.md
 
@@ -69,7 +69,7 @@ runner = routed_runner(server, {"crowsnest": fan_out({"laptop": laptop, "server"
 app = mk_server("claude-ai", runner=runner, auth=..., classes=("read", "handoff")).http_app()
 ```
 
-The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. `routed_runner` sends a request to the runner of the longest leading words it matches (`"crowsnest"`, `"crowsnest intent"`); `with_fallback` asks a second machine only when the first cannot be reached; `fan_out` asks several machines in parallel and merges their answers, each line tagged with its machine, and names on its own line any machine that did not answer, so a partial list never reads as a whole one. Use it for reads only: a request that changes something goes to one runner. A rule’s `reply` (a template over `{out}`, the command’s output) shapes a successful answer for these transports, as `post_handoff` does to return a line to paste into Claude Code. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume.
+The *runner* is the seam: `local_runner` runs the gate on this machine; `ssh_runner` sends the request to a key whose forced command is the gate, so a server process running as its own account reaches tools it holds no credentials for. `routed_runner` sends a request to the runner of the longest leading words it matches (`"crowsnest"`, `"crowsnest intent"`); `with_fallback` asks a second machine only when the first cannot be reached; `fan_out` asks several machines in parallel and merges their answers, each line tagged with its machine, and names on its own line any machine that did not answer, so a partial list never reads as a whole one. Use it for reads only: a request that changes something goes to one runner. A rule’s `reply` (a template over `{out}`, the command’s output) shapes a successful answer for these transports, as `post_handoff` does to return a line to paste into Claude Code. Authentication is the job of whoever serves it on a network (`auth=` goes to `FastMCP`). Only the classes you name are offered (default: `read`). Long answers are paged: every tool takes `offset`, and the answer says where to resume. `tag=` (CLI `--tag`) is the name the client knows the connector by: every tool’s description starts with it and the instructions say to search for it, because a client holding many tools may offer some only through a tool search.
 
 **The bundled `claude-ai` profile** is shaped for a conversation, typed or spoken: Claude Code sessions (`session_triage`, `session_roster`, `session_recap`, `session_turns`, `session_ledger`), open loops (`owed_by_owner`, `blocked_work`), the owner’s reminders (`list_reminders`; and `add_reminder`, `close_reminder`, `snooze_reminder` in the `reminder` class, off until `allow-reminder` exists; a push never reveals its title), GitHub read-only (`list_repos`, `repo_overview`, `read_repo_file`, `list_issues`, `read_issue`; a repository whose name contains `secret` is refused), and a handoff inbox shared with Claude Code through [annals](https://github.com/thorwhalen/annals) (`read_handoffs`, `read_document` and `document_info`, which take an annals link as handed, on any annals the machine’s annals config can read, and `post_handoff` in the `handoff` class, whose text goes to the command’s standard input, never its arguments). A machine adds what only it has in a private profile that starts with `extends = "claude-ai"`.
 
@@ -532,6 +532,7 @@ holding any of their credentials. Building the server needs `fastmcp`
 | [`routed_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.routed_runner)(default, routes)                    | Send a request to the runner of the longest leading words it matches in `routes`.         |
 | [`ssh_runner`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.ssh_runner)(destination, \*[, identity, ssh, ...]) | Send each request over SSH to `destination`, whose key's forced command is the gate.      |
 | [`tag_lines`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tag_lines)(name, text)                             | Every non-blank line of `text` prefixed with `[name]`, so merged rows say whose they are. |
+| [`tagged`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tagged)(tag, instructions, tools)                  | `instructions` and `tools` marked with the connector's name `tag`.                        |
 | [`tool_name`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tool_name)(rule)                                   | The MCP name of a rule: its `tool` key, else its words joined by underscores.             |
 | [`unreachable`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.unreachable)(result)                               | Whether `result` is ssh failing to connect, as opposed to the far side answering.         |
 | [`with_fallback`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.with_fallback)(primary, fallback, \*[, note, ...]) | `primary`, unless it could not be reached; then `fallback`, with `note` first.            |
@@ -618,13 +619,18 @@ exactly as they do behind sshd.
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Result`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.Result)]
 
-### hatchway.mcp.mk_server(profile=None, , runner=None, settings=None, classes=('read',), max_chars=6000, name=None, instructions=None, \*\*server_kwargs)
+### hatchway.mcp.mk_server(profile=None, , runner=None, settings=None, classes=('read',), max_chars=6000, name=None, instructions=None, tag=None, \*\*server_kwargs)
 
 A `FastMCP` server over `profile`’s rules.
 
 `runner` defaults to [`local_runner()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.local_runner) with the same profile. `server_kwargs`
 go to `FastMCP` (`auth=`, `middleware=`): authentication belongs to whoever
 serves this over a network, not to hatchway.
+
+`tag` is the name the client knows this connector by. When given, every tool’s
+description starts with it and the instructions say to search for it
+([`tagged()`](_autosummary/hatchway.mcp.html.md#hatchway.mcp.tagged)): a client that holds many tools offers some only through a tool
+search, which then finds all of these by one word.
 
 ### hatchway.mcp.mk_tool(rule, , runner, max_chars=6000)
 
@@ -684,6 +690,25 @@ Every non-blank line of `text` prefixed with `[name]`, so merged rows say whose 
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### hatchway.mcp.tagged(tag, instructions, tools)
+
+`instructions` and `tools` marked with the connector’s name `tag`.
+
+Each tool’s description starts with `"<tag>: "`, and the instructions end with how
+to find a tool the client has not loaded: search its tools for `tag` and a word.
+
+```pycon
+>>> def f(): "Read one file."
+>>> text, (g,) = tagged("Fleet", "Tools.", [f])
+>>> g.__doc__
+'Fleet: Read one file.'
+>>> text.endswith("(session, repo, issue, reminder, pile, handoff, message).")
+True
+```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]]
 
 ### hatchway.mcp.tool_name(rule)
 
@@ -829,18 +854,18 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-23 17:38 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/bf6fb69d24993ef1128425ca7367ec86c0ed868f"><code>bf6fb69</code></a> on branch <code>main</code>, for **hatchway 0.0.13** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-23 19:15 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/97b0b0a99f4b88487e8bf225a50b784d0adb4eb6"><code>97b0b0a</code></a> on branch <code>main</code>, for **hatchway 0.0.14** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.13) is behind the latest release on PyPI (0.0.14): `pip install hatchway` gives newer code than these docs describe.
+- The documented version (0.0.14) is behind the latest release on PyPI (0.0.15): `pip install hatchway` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/bf6fb69d24993ef1128425ca7367ec86c0ed868f"><code>bf6fb69d24993ef1128425ca7367ec86c0ed868f</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/97b0b0a99f4b88487e8bf225a50b784d0adb4eb6"><code>97b0b0a99f4b88487e8bf225a50b784d0adb4eb6</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -851,9 +876,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/45229554254">45229554254</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/45246861780">45246861780</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>bf6fb69d24993ef1128425ca7367ec86c0ed868f</code> (in the history of the built commit) |
+| Event commit | <code>97b0b0a99f4b88487e8bf225a50b784d0adb4eb6</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -878,13 +903,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.14/">0.0.14</a>, newer than the documented version (0.0.13).
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.15/">0.0.15</a>, newer than the documented version (0.0.14).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout bf6fb69d24993ef1128425ca7367ec86c0ed868f
+git checkout 97b0b0a99f4b88487e8bf225a50b784d0adb4eb6
 pip install "epythet==0.2.25"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
