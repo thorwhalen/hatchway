@@ -55,6 +55,11 @@ requires_flag = "allow-issue-write"
 # and the session answers it, so intent_status says what became of it. Reversible (the
 # session may decline, and nothing is deleted). Off until
 # ~/.config/hatchway/allow-session-message exists.
+# The rule pins `--source claude-ai` (the conversation may have read text other people
+# wrote): crowsnest hands such an intent to the watching session first unless the
+# courier's `[courier] deliver_sources` lists claude-ai, and signs it as the connector's
+# when it does. `--max-per-hour 6` caps it, as request_work is capped. A machine's private
+# rule that replaces this one must keep both.
 requires_flag = "allow-session-message"
 
 [classes.reminder]
@@ -457,7 +462,7 @@ match = ["crowsnest", "intent", "put"]
 tool = "message_session"
 class = "session_message"
 param = "session"
-argv = ["crowsnest", "intent", "put", "tell"]
+argv = ["crowsnest", "intent", "put", "tell", "--source", "claude-ai", "--max-per-hour", "6"]
 value_flags = [
   { names = ["--text"], free = true },
   { names = ["--idempotency-key"], pattern = "[A-Za-z0-9_.-]{1,64}" },

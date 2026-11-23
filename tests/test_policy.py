@@ -199,6 +199,16 @@ def test_message_session_use_and_abuse():
     d = decide("crowsnest intent put alpha-1 --text 'stop now'", p, flags_present=on)
     assert d.allowed and d.argv[:4] == ("crowsnest", "intent", "put", "tell")
     assert d.stdin == "stop now" and d.argv[-2:] == ("--", "alpha-1")
+    # the origin and the cap are pinned by the profile, never by the caller
+    assert d.argv[4:8] == ("--source", "claude-ai", "--max-per-hour", "6")
+    for abuse in (
+        "crowsnest intent put alpha --source console --text hi",
+        "crowsnest intent put alpha --source=console --text hi",
+        "crowsnest intent put alpha --sou console --text hi",
+        "crowsnest intent put alpha --max-per-hour 999 --text hi",
+        "crowsnest intent put alpha --text hi -- --source console",
+    ):
+        assert not decide(abuse, p, flags_present=on).allowed, abuse
     # off without its flag; no other intent kinds; no store override; no odd session names
     assert not decide("crowsnest intent put alpha --text hi", p, flags_present=set()).allowed
     assert not decide(
