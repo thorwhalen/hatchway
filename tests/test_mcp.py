@@ -170,6 +170,28 @@ def test_served_over_mcp(claude_ai):
     ]
 
 
+def test_a_tag_marks_every_tool_and_says_what_to_search_for(claude_ai):
+    fastmcp = pytest.importorskip("fastmcp")
+    from hatchway.mcp import mk_server
+
+    server = mk_server(
+        claude_ai,
+        runner=lambda r: Result(0, "ok", ""),
+        classes=("read", "handoff"),
+        tag="Fleet",
+    )
+
+    async def go():
+        async with fastmcp.Client(server) as c:
+            return await c.list_tools(), c.initialize_result
+
+    tools, init = asyncio.run(go())
+    assert tools and all(t.description.startswith("Fleet: ") for t in tools)
+    assert "search your tools for 'Fleet'" in init.instructions
+    untagged = mk_server(claude_ai, runner=lambda r: Result(0, "ok", ""))
+    assert "search your tools" not in (untagged.instructions or "")
+
+
 def test_routing_and_fallback():
     from hatchway.mcp import UNREACHABLE, routed_runner, with_fallback
 
