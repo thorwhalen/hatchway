@@ -470,6 +470,7 @@ def mk_server(
     max_chars: int = DFLT_MAX_CHARS,
     name: str | None = None,
     instructions: str | None = None,
+    tag: str | None = None,
     **server_kwargs,
 ):
     """A ``FastMCP`` server over ``profile``'s rules.
@@ -477,6 +478,11 @@ def mk_server(
     ``runner`` defaults to :func:`local_runner` with the same profile. ``server_kwargs``
     go to ``FastMCP`` (``auth=``, ``middleware=``): authentication belongs to whoever
     serves this over a network, not to hatchway.
+
+    ``tag`` is the name the client knows this connector by. When given, every tool's
+    description starts with it and the instructions say to search for it
+    (:func:`tagged`): a client that holds many tools offers some only through a tool
+    search, which then finds all of these by one word.
     """
     from fastmcp import FastMCP
 
@@ -492,14 +498,46 @@ def mk_server(
         profile = profile or settings.profile
         runner = runner or local_runner(profile=profile)
         profile = load_profile(profile, settings=settings)
+    instructions = instructions if instructions is not None else profile.instructions
+    tools = mk_tools(profile, runner=runner, classes=classes, max_chars=max_chars)
+    if tag:
+        instructions, tools = tagged(tag, instructions, tools)
     server = FastMCP(
         name or f"hatchway-{profile.name or 'profile'}",
-        instructions=instructions if instructions is not None else profile.instructions,
+        instructions=instructions,
         **server_kwargs,
     )
-    for tool in mk_tools(profile, runner=runner, classes=classes, max_chars=max_chars):
+    for tool in tools:
         server.tool(tool, annotations={"readOnlyHint": _read_only(tool, profile)})
     return server
+
+
+def tagged(
+    tag: str, instructions: str, tools: Iterable[Callable]
+) -> tuple[str, list[Callable]]:
+    """``instructions`` and ``tools`` marked with the connector's name ``tag``.
+
+    Each tool's description starts with ``"<tag>: "``, and the instructions end with how
+    to find a tool the client has not loaded: search its tools for ``tag`` and a word.
+
+    >>> def f(): "Read one file."
+    >>> text, (g,) = tagged("Fleet", "Tools.", [f])
+    >>> g.__doc__
+    'Fleet: Read one file.'
+    >>> text.endswith("(session, repo, issue, reminder, pile, handoff, message).")
+    True
+    """
+    tag = " ".join(str(tag).split())
+    if not tag:
+        raise ValueError("a tag is the connector's name, not blank")
+    for tool in tools:
+        tool.__doc__ = f"{tag}: {tool.__doc__ or ''}".rstrip()
+    hint = (
+        f"If a {tag} tool you need is not in your tool list, search your tools for "
+        f"'{tag}' and a word for what you need (session, repo, issue, reminder, pile, "
+        "handoff, message)."
+    )
+    return (f"{instructions.rstrip()}\n{hint}" if instructions else hint), list(tools)
 
 
 def _read_only(tool: Callable, profile: Profile) -> bool:

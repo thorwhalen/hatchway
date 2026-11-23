@@ -97,6 +97,9 @@ def main(argv: list[str] | None = None) -> int:
         help="required with --http: this serves WITHOUT authentication, to this machine",
     )
     m.add_argument("--list", action="store_true", help="print the tools and exit")
+    m.add_argument(
+        "--tag", help="the name the client knows this connector by: starts every description"
+    )
 
     args = ap.parse_args(argv)
     settings = load_settings()
@@ -123,7 +126,9 @@ def main(argv: list[str] | None = None) -> int:
             for t in mk_tools(profile, runner=runner, classes=classes):
                 print(f"{t.__name__}{t.__signature__}  {t.__doc__}")
             return 0
-        server = mk_server(profile, runner=runner, settings=settings, classes=classes)
+        server = mk_server(
+            profile, runner=runner, settings=settings, classes=classes, tag=args.tag
+        )
         if args.http:
             server.run(transport="streamable-http", host="127.0.0.1", port=args.http)
         else:
