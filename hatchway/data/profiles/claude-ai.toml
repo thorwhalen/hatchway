@@ -25,7 +25,7 @@ the documents it links to). post_handoff writes a note Claude Code will read: us
 when the owner asks to pass something on, and read the title and body back first. \
 create_issue and comment_issue write to GitHub: read the title and text back first; a \
 'needs_approval' or 'held' answer means the publication check kept it for the owner, so \
-say so and do not reword it to get past the check. message_session queues a message for one session (read it back first); the lookout reads it first and passes it on, so follow it with intent_status a few minutes later. add_reminder sets a reminder for the owner at a time they said (read back the line it prints); list_reminders, close_reminder and snooze_reminder manage them. The pile is the owner's capture list (pile_list): to go through it, read the count, then put ONE item at a time to the owner as one sentence with where you propose it goes, and act only on their yes to that item (pile_plan, then run its steps); five items at most per sitting. request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
+say so and do not reword it to get past the check. message_session queues a message for one session (read it back first); the lookout reads it first, answers a status question itself and holds anything that starts work until the owner says yes at the desk, so say so and follow it with intent_status a few minutes later. add_reminder sets a reminder for the owner at a time they said (read back the line it prints); list_reminders, close_reminder and snooze_reminder manage them. The pile is the owner's capture list (pile_list): to go through it, read the count, then put ONE item at a time to the owner as one sentence with where you propose it goes, and act only on their yes to that item (pile_plan, then run its steps); five items at most per sitting. request_work asks for a job on one issue; it starts nothing: say that the owner confirms \
 it on their desk with Face ID or Touch ID, and use work_status to say what became of it. It \
 answers with one line for Claude Code: show that line to the owner exactly as given, on \
 its own, ready to copy, and tell them to paste it into a Claude Code session.
@@ -472,7 +472,7 @@ min_positional = 1
 max_positional = 1
 positional_pattern = "[A-Za-z0-9][A-Za-z0-9_.-]{0,63}(?:@[A-Za-z0-9_-]{1,32})?"
 arg = "the session's name, as session_roster shows it"
-help = "Send a message to one Claude Code session (text: what to do, e.g. 'work on X', 'stop', 'reply with your status'). The lookout (the watching session) reads every message from here first and passes it on, so name the session the work belongs to, or 'lookout' for new work. Queued, not instant: the answer is an intent id; use intent_status a few minutes later ('handed to <name>, the watching session' means the lookout has it; the answer appears when one is written)."
+help = "Send a message to one Claude Code session (text: what to do, e.g. 'work on X', 'stop', 'reply with your status'). The lookout (the watching session) reads every message from here first: it answers a status question itself, and holds anything that starts or changes work until the owner says yes at the desk. Name the session the work belongs to, or 'lookout' for new work. Queued, not instant: the answer is an intent id; use intent_status a few minutes later ('handed to <name>, the watching session' means the lookout has it; its answer says whether it is held for the owner's yes)."
 
 # --- work requests: a job on an issue, confirmed by the owner in person ----------------
 
