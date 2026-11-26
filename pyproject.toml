@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hatchway"
-version = "0.0.16"
+version = "0.0.17"
 description = "A narrow, logged opening through which an outside agent reaches your tools: an SSH forced command that runs only an allowlist kept as data"
 readme = "README.md"
 license = "MIT"
