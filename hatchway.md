@@ -1,4 +1,4 @@
-> built 2026-11-25 11:16 UTC from 49eb4e3 (main) · hatchway 0.0.15. Details: build_info.json
+> built 2026-11-26 18:16 UTC from 66077f1 (main) · hatchway 0.0.16. Details: build_info.json
 
 # index.html.md
 
@@ -854,16 +854,18 @@ One line per rule, for the `help` answer an agent gets.
 
 # About this build
 
-This documentation was built on **2026-11-25 11:16 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/49eb4e3bfbe304fa0e51dd212b37d7fb206c1ae9"><code>49eb4e3</code></a> on branch <code>main</code>, for **hatchway 0.0.15** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-26 18:16 UTC** from commit <a href="https://github.com/thorwhalen/hatchway/commit/66077f14c6efa79dda30ac69d3ad7ca07dd2b49d"><code>66077f1</code></a> on branch <code>main</code>, for **hatchway 0.0.16** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.16) is behind the latest release on PyPI (0.0.17): `pip install hatchway` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/49eb4e3bfbe304fa0e51dd212b37d7fb206c1ae9"><code>49eb4e3bfbe304fa0e51dd212b37d7fb206c1ae9</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/hatchway/commit/66077f14c6efa79dda30ac69d3ad7ca07dd2b49d"><code>66077f14c6efa79dda30ac69d3ad7ca07dd2b49d</code></a> |
 | Branch              | <code>main</code>                                                                                                                                          |
 | Tags at this commit | none                                                                                                                                                       |
 | Working tree        | clean                                                                                                                                                      |
@@ -874,9 +876,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/hatchway</code>                                                           |
-| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/45602716628">45602716628</a>  |
+| Run          | <a href="https://github.com/thorwhalen/hatchway/actions/runs/45874418279">45874418279</a>  |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>49eb4e3bfbe304fa0e51dd212b37d7fb206c1ae9</code> (in the history of the built commit) |
+| Event commit | <code>66077f14c6efa79dda30ac69d3ad7ca07dd2b49d</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -901,13 +903,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/hatchway/0.0.15/">0.0.15</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/hatchway/0.0.17/">0.0.17</a>, newer than the documented version (0.0.16).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/hatchway && cd hatchway
-git checkout 49eb4e3bfbe304fa0e51dd212b37d7fb206c1ae9
+git checkout 66077f14c6efa79dda30ac69d3ad7ca07dd2b49d
 pip install "epythet==0.2.25"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
